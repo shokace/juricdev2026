@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+:root {
+  --bg0: #050608;
+  --panel: rgba(12, 14, 16, 0.72);
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.04);
+
+  --text0: rgba(255, 255, 255, 0.92);
+  --text1: rgba(255, 255, 255, 0.7);
+  --text2: rgba(255, 255, 255, 0.45);
+
+  --accent-red: #e33a3a;
+  --accent-green: #35f28b;
+}
+
+@theme inline {
+  --color-background: var(--bg0);
+  --color-foreground: var(--text0);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg0);
+  color: var(--text0);
+  font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  letter-spacing: 0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--text0);
+}
+
+.hud-grid::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hud-noise::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(circle at top, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.6) 100%);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hud-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6) inset;
+  backdrop-filter: blur(10px);
+}
+
+.hud-panel:hover {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6) inset, 0 0 18px rgba(227, 58, 58, 0.12);
+}
+
+.hud-divider {
+  border-color: var(--border2);
+}
+
+.text-muted {
+  color: var(--text1);
+}
+
+.text-faint {
+  color: var(--text2);
+}
+
+.glow-red {
+  color: var(--accent-red);
+}
+
+.glow-green {
+  color: var(--accent-green);
+}
+
+.gh-cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gh-level-0 {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gh-level-1 {
+  background: rgba(53, 242, 139, 0.2);
+}
+
+.gh-level-2 {
+  background: rgba(53, 242, 139, 0.38);
+}
+
+.gh-level-3 {
+  background: rgba(53, 242, 139, 0.58);
+}
+
+.gh-level-4 {
+  background: rgba(53, 242, 139, 0.78);
+}
+
+
+@keyframes slow-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-slow-spin {
+  animation: slow-spin 28s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.animate-floaty {
+  animation: floaty 6s ease-in-out infinite;
+}
