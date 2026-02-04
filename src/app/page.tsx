@@ -1,4 +1,5 @@
 import Globe3D from "@/components/globe-3d";
+import IssTelemetry from "@/components/iss-telemetry";
 import { fetchGithubContributionGrid } from "@/lib/github";
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
@@ -284,7 +285,7 @@ export default async function Home() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Availability</span>
-                  <span className="text-[color:var(--accent-green)]">Open</span>
+                  <span className="text-[color:#f59e0b]">Contracted</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Focus</span>
@@ -298,10 +299,6 @@ export default async function Home() {
                 Software engineer with experience in real-time C++ and embedded hardware. 
                 Qt/Python tooling, DSP audio, and cloud workflows.
               </p>
-              <div className="mt-4 flex items-center justify-between text-[0.7rem] uppercase tracking-[0.2em] text-faint">
-                <span>Ops Window</span>
-                <span className="text-[color:var(--text0)]">2022 → 2026</span>
-              </div>
             </Panel>
 
             <Panel
@@ -352,25 +349,21 @@ export default async function Home() {
           </div>
 
           <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
-            <Panel title="Global Operations">
+            <Panel title="ISS tracking · live orbital telemetry">
               <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
                 <div className="space-y-4">
-                  <div className="text-[0.72rem] uppercase tracking-[0.2em] text-faint">
-                    Targeted coverage · 14 active regions
-                  </div>
                   <div className="text-[0.9rem] uppercase tracking-[0.2em] text-muted">
-                    Wireframe reconnaissance globe with realtime telemetry overlay.
-                  </div>
-                  <div className="flex gap-4 text-[0.7rem] uppercase tracking-[0.2em] text-faint">
-                    <span>Signal Integrity</span>
-                    <span className="text-[color:var(--accent-green)]">Stable</span>
+                    Earth visualization focused on current ISS position
                   </div>
                 </div>
                 <div className="flex items-center justify-center">
-                  <div className="animate-floaty">
+                  <div>
                     <Globe3D />
                   </div>
                 </div>
+              </div>
+              <div className="mt-4">
+                <IssTelemetry />
               </div>
             </Panel>
 
@@ -427,10 +420,6 @@ export default async function Home() {
 
         <div className="mt-6">
           <Panel title={`GitHub Activity ${currentYear}`}>
-            <div className="flex items-center justify-between text-[0.7rem] uppercase tracking-[0.2em] text-faint">
-              <span>Contribution Grid</span>
-              <span className="text-[color:var(--accent-green)]">Live</span>
-            </div>
             <div className="mt-4 overflow-hidden rounded-sm border border-[color:var(--border2)] bg-black/30 p-3">
               <div
                 className="gh-grid grid gap-[3px]"
