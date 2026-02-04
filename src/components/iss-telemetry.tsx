@@ -62,11 +62,11 @@ export default function IssTelemetry() {
   return (
     <div className="space-y-2 text-[0.72rem] uppercase tracking-[0.2em] text-faint">
       <div className="flex items-center justify-between">
-        <span>Lat</span>
+        <span>Latitude</span>
         <span className="text-[color:var(--text0)]">{state.latitude}</span>
       </div>
       <div className="flex items-center justify-between">
-        <span>Long</span>
+        <span>Longitude</span>
         <span className="text-[color:var(--text0)]">{state.longitude}</span>
       </div>
       <div className="flex items-center justify-between">

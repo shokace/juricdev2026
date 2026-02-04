@@ -1,87 +1,9 @@
 import Globe3D from "@/components/globe-3d";
+import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
+import OpenAIUsage from "@/components/openai-usage";
 import { fetchGithubContributionGrid } from "@/lib/github";
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
-
-type SparklineProps = {
-  data: number[];
-  color: string;
-};
-
-type StatProps = {
-  label: string;
-  value: string;
-  delta: string;
-  positive?: boolean;
-};
-
-type Position = {
-  symbol: string;
-  qty: number;
-  avg: string;
-  last: string;
-  pnl: string;
-  positive: boolean;
-  data: number[];
-};
-
-type OpsItem = {
-  title: string;
-  detail: string;
-  status: string;
-};
-
-const kpis: StatProps[] = [
-  { label: "Equity", value: "$124,480.88", delta: "+2.8%", positive: true },
-  { label: "Cash", value: "$18,230.42", delta: "-0.4%", positive: false },
-  { label: "Buying Power", value: "$36,910.23", delta: "+1.2%", positive: true },
-];
-
-const positions: Position[] = [
-  {
-    symbol: "NVDA",
-    qty: 42,
-    avg: "$512.33",
-    last: "$540.12",
-    pnl: "+$1,166.94",
-    positive: true,
-    data: [12, 14, 13, 18, 22, 19, 24, 26, 28, 30, 29, 31],
-  },
-  {
-    symbol: "AAPL",
-    qty: 120,
-    avg: "$176.91",
-    last: "$173.44",
-    pnl: "-$416.40",
-    positive: false,
-    data: [30, 28, 29, 27, 26, 25, 26, 24, 23, 22, 23, 21],
-  },
-  {
-    symbol: "AMD",
-    qty: 65,
-    avg: "$148.40",
-    last: "$156.02",
-    pnl: "+$495.30",
-    positive: true,
-    data: [14, 16, 15, 17, 18, 20, 21, 23, 22, 24, 25, 26],
-  },
-  {
-    symbol: "PLTR",
-    qty: 90,
-    avg: "$22.05",
-    last: "$20.84",
-    pnl: "-$108.90",
-    positive: false,
-    data: [18, 17, 18, 16, 15, 14, 13, 14, 12, 13, 12, 11],
-  },
-];
-
-const opsItems: OpsItem[] = [
-  { title: "Market Open Sweep", detail: "Macro volatility scan", status: "ACTIVE" },
-  { title: "Risk Envelope", detail: "VaR recalibration", status: "SYNC" },
-  { title: "Order Routing", detail: "Dark pool check", status: "STANDBY" },
-  { title: "Signal Drift", detail: "Model variance +0.8%", status: "ALERT" },
-];
 
 const links = [
   { label: "GitHub", href: "https://github.com/shokace/" },
@@ -124,109 +46,6 @@ function Panel({ title, children }: { title?: React.ReactNode; children: React.R
       ) : null}
       {children}
     </section>
-  );
-}
-
-function StatCard({ label, value, delta, positive }: StatProps) {
-  return (
-    <div className="hud-panel rounded-sm p-4">
-      <div className="text-[0.65rem] uppercase tracking-[0.28em] text-faint">{label}</div>
-      <div className="mt-3 text-xl text-[color:var(--text0)]">{value}</div>
-      <div
-        className={`mt-2 text-[0.7rem] uppercase tracking-[0.2em] ${
-          positive ? "text-[color:var(--accent-green)]" : "text-[color:var(--accent-red)]"
-        }`}
-      >
-        {delta}
-      </div>
-    </div>
-  );
-}
-
-function Sparkline({ data, color }: SparklineProps) {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const points = data
-    .map((value, index) => {
-      const x = (index / (data.length - 1)) * 100;
-      const y = 100 - ((value - min) / (max - min || 1)) * 100;
-      return `${x},${y}`;
-    })
-    .join(" ");
-
-  return (
-    <svg viewBox="0 0 100 100" className="h-8 w-24">
-      <polyline
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points={points}
-        opacity="0.8"
-      />
-    </svg>
-  );
-}
-
-function HUDTable({ rows }: { rows: Position[] }) {
-  return (
-    <div className="overflow-hidden rounded-sm border border-[color:var(--border2)]">
-      <table className="w-full text-left text-[0.7rem] uppercase tracking-[0.2em] text-faint">
-        <thead className="border-b border-[color:var(--border2)]">
-          <tr>
-            <th className="px-3 py-2">Symbol</th>
-            <th className="px-3 py-2">Qty</th>
-            <th className="px-3 py-2">Avg</th>
-            <th className="px-3 py-2">Last</th>
-            <th className="px-3 py-2">P&L</th>
-            <th className="px-3 py-2">Trend</th>
-          </tr>
-        </thead>
-        <tbody className="text-[0.75rem] tracking-[0.18em] text-muted">
-          {rows.map((row) => (
-            <tr key={row.symbol} className="border-b border-[color:var(--border2)] last:border-0">
-              <td className="px-3 py-3 text-[color:var(--text0)]">{row.symbol}</td>
-              <td className="px-3 py-3">{row.qty}</td>
-              <td className="px-3 py-3">{row.avg}</td>
-              <td className="px-3 py-3">{row.last}</td>
-              <td
-                className={`px-3 py-3 ${
-                  row.positive ? "text-[color:var(--accent-green)]" : "text-[color:var(--accent-red)]"
-                }`}
-              >
-                {row.pnl}
-              </td>
-              <td className="px-3 py-3">
-                <Sparkline
-                  data={row.data}
-                  color={row.positive ? "var(--accent-green)" : "var(--accent-red)"}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function OpsListItem({ item }: { item: OpsItem }) {
-  const statusColor =
-    item.status === "ALERT"
-      ? "text-[color:var(--accent-red)]"
-      : item.status === "ACTIVE"
-        ? "text-[color:var(--accent-green)]"
-        : "text-faint";
-
-  return (
-    <div className="border-b border-[color:var(--border2)] pb-3 last:border-0">
-      <div className="flex items-center justify-between text-[0.72rem] uppercase tracking-[0.25em] text-[color:var(--text0)]">
-        <span>{item.title}</span>
-        <span className={statusColor}>{item.status}</span>
-      </div>
-      <div className="mt-2 text-[0.7rem] uppercase tracking-[0.2em] text-faint">{item.detail}</div>
-    </div>
   );
 }
 
@@ -350,71 +169,29 @@ export default async function Home() {
 
           <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
             <Panel title="ISS tracking · live orbital telemetry">
-              <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
-                <div className="space-y-4">
-                  <div className="text-[0.9rem] uppercase tracking-[0.2em] text-muted">
-                    Earth visualization focused on current ISS position
-                  </div>
-                </div>
-                <div className="flex items-center justify-center">
-                  <div>
-                    <Globe3D />
-                  </div>
-                </div>
+              <div className="flex w-full flex-col items-center justify-center gap-2 overflow-visible">
+                <Globe3D />
               </div>
-              <div className="mt-4">
+              <div className="-mt-4">
                 <IssTelemetry />
               </div>
             </Panel>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              {kpis.map((kpi) => (
-                <StatCard key={kpi.label} {...kpi} />
-              ))}
-            </div>
+            
 
-            <Panel title="Positions">
-              <HUDTable rows={positions} />
-            </Panel>
+            
           </div>
 
           <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
-            <Panel title="Operations">
-              <div className="space-y-4">
-                {opsItems.map((item) => (
-                  <OpsListItem key={item.title} item={item} />
-                ))}
-              </div>
+            <Panel title="Contributions">
+              <GithubActivity />
             </Panel>
 
-            <Panel title="System Stats">
-              <div className="space-y-3 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
-                <div className="flex items-center justify-between">
-                  <span>API Requests</span>
-                  <span className="text-[color:var(--text0)]">12.4k</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>LLM Cost</span>
-                  <span className="text-[color:var(--accent-red)]">$42.18</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Memory</span>
-                  <span className="text-[color:var(--text0)]">72%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Alerts</span>
-                  <span className="text-[color:var(--accent-red)]">3</span>
-                </div>
-              </div>
+            <Panel title="AI Usage">
+              <OpenAIUsage />
             </Panel>
 
-            <Panel title="Announcements">
-              <div className="space-y-3 text-[0.72rem] uppercase leading-6 tracking-[0.2em] text-muted">
-                <p>Portfolio rebalanced to reduce beta exposure.</p>
-                <p>Latency optimization sprint scheduled.</p>
-                <p>New automation pass for reporting stack.</p>
-              </div>
-            </Panel>
+            
           </div>
         </section>
 

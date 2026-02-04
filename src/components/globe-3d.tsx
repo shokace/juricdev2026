@@ -18,6 +18,7 @@ type IssPoint = {
 
 const ISS_STORAGE_KEY = "iss-trail-points";
 const ISS_TRAIL_WINDOW_MS = 30 * 60 * 1000;
+const ISS_RADIUS = 1.18;
 
 function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
@@ -71,6 +72,7 @@ function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
         } else {
           currentIssRef.current.lerp(issTarget, 0.04);
         }
+        currentIssRef.current.setLength(ISS_RADIUS);
         issRef.current.position.copy(currentIssRef.current);
       }
       const scale = 0.85 + Math.sin(Date.now() * 0.004) * 0.25;
@@ -144,8 +146,8 @@ export default function Globe3D() {
   const [issPoints, setIssPoints] = useState<IssPoint[]>([]);
   const [issTarget, setIssTarget] = useState<THREE.Vector3 | null>(null);
   const issVectors = useMemo(() => {
-    const radius = 1.08;
     return issPoints.map((point) => {
+      const radius = ISS_RADIUS;
       const phi = (90 - point.lat) * (Math.PI / 180);
       const theta = (point.lon + 180) * (Math.PI / 180);
       const x = -radius * Math.sin(phi) * Math.cos(theta);
@@ -196,7 +198,7 @@ export default function Globe3D() {
         if (Number.isNaN(lat) || Number.isNaN(lon)) {
           return;
         }
-        const radius = 1.08;
+        const radius = ISS_RADIUS;
         const phi = (90 - lat) * (Math.PI / 180);
         const theta = (lon + 180) * (Math.PI / 180);
         const x = -radius * Math.sin(phi) * Math.cos(theta);
@@ -228,9 +230,9 @@ export default function Globe3D() {
   }, []);
 
   return (
-    <div className="h-64 w-64">
+    <div className="mx-auto h-[22rem] w-[22rem] overflow-visible">
       <Canvas
-        camera={{ position: [0, 0, 3.2], fov: 35 }}
+        camera={{ position: [0, 0, 3.5], fov: 34 }}
         gl={{ alpha: true, antialias: true }}
         style={{ width: "100%", height: "100%" }}
       >
