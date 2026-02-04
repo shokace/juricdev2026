@@ -1,3 +1,4 @@
+import Globe3D from "@/components/globe-3d";
 import { fetchGithubContributionGrid } from "@/lib/github";
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
@@ -228,63 +229,6 @@ function OpsListItem({ item }: { item: OpsItem }) {
   );
 }
 
-function Globe() {
-  return (
-    <div className="flex items-center justify-center">
-      <svg viewBox="0 0 240 240" className="h-56 w-56">
-        <g className="animate-slow-spin" style={{ transformOrigin: "50% 50%" }}>
-          <circle cx="120" cy="120" r="84" fill="none" stroke="rgba(255,255,255,0.2)" />
-          <circle cx="120" cy="120" r="64" fill="none" stroke="rgba(255,255,255,0.18)" />
-          <circle cx="120" cy="120" r="44" fill="none" stroke="rgba(255,255,255,0.15)" />
-          <ellipse
-            cx="120"
-            cy="120"
-            rx="84"
-            ry="30"
-            fill="none"
-            stroke="rgba(227,58,58,0.5)"
-            strokeDasharray="4 4"
-          />
-          <ellipse
-            cx="120"
-            cy="120"
-            rx="84"
-            ry="56"
-            fill="none"
-            stroke="rgba(255,255,255,0.2)"
-          />
-          <ellipse
-            cx="120"
-            cy="120"
-            rx="56"
-            ry="84"
-            fill="none"
-            stroke="rgba(255,255,255,0.25)"
-          />
-          <path
-            d="M40 120h160"
-            stroke="rgba(255,255,255,0.2)"
-            strokeDasharray="6 6"
-          />
-          <path
-            d="M120 36v168"
-            stroke="rgba(255,255,255,0.18)"
-            strokeDasharray="6 6"
-          />
-        </g>
-        <circle
-          cx="120"
-          cy="120"
-          r="92"
-          fill="none"
-          stroke="rgba(227,58,58,0.4)"
-          strokeDasharray="2 6"
-        />
-      </svg>
-    </div>
-  );
-}
-
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
@@ -351,8 +295,8 @@ export default async function Home() {
 
             <Panel title="Mission Brief">
               <p className="text-[0.72rem] uppercase leading-6 tracking-[0.2em] text-muted">
-                Software engineer with experience in real-time C++ and embedded systems for 5G
-                hardware. Qt/Python tooling, DSP audio, and cloud workflows.
+                Software engineer with experience in real-time C++ and embedded hardware. 
+                Qt/Python tooling, DSP audio, and cloud workflows.
               </p>
               <div className="mt-4 flex items-center justify-between text-[0.7rem] uppercase tracking-[0.2em] text-faint">
                 <span>Ops Window</span>
@@ -424,7 +368,7 @@ export default async function Home() {
                 </div>
                 <div className="flex items-center justify-center">
                   <div className="animate-floaty">
-                    <Globe />
+                    <Globe3D />
                   </div>
                 </div>
               </div>

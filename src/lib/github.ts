@@ -37,11 +37,14 @@ function parseContributionCells(html: string): GithubContributionCell[] {
       continue;
     }
 
+    const rowIndex = Number(idMatch[1]);
+    const colIndex = Number(idMatch[2]);
+
     cells.push({
       date,
       level: Number.isNaN(level) ? 0 : level,
-      row: Number(idMatch[1]),
-      col: Number(idMatch[2]),
+      row: Number.isNaN(rowIndex) ? 0 : rowIndex,
+      col: Number.isNaN(colIndex) ? 0 : colIndex,
     });
   }
 
@@ -62,7 +65,7 @@ export async function fetchGithubContributionGrid(
       "X-Requested-With": "XMLHttpRequest",
       Accept: "text/html",
     },
-    next: { revalidate: 3600 },
+    next: { revalidate: 300 },
   });
 
   if (!response.ok) {
