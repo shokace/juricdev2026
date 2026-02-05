@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchGithubContributionGrid } from "@/lib/github";
 
 export const revalidate = 300;
+export const runtime = "edge";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

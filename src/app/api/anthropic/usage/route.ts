@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "edge";
+
 type UsageResult = {
   uncached_input_tokens: number;
   cache_read_input_tokens: number;

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchNeverLandingStats, isCloudflareError } from "@/lib/neverlanding";
 
 export const revalidate = 300;
+export const runtime = "edge";
 
 export async function GET() {
   try {

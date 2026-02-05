@@ -50,6 +50,7 @@ function Panel({ title, children }: { title?: React.ReactNode; children: React.R
 }
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 export default async function Home() {
   const neverLandingStats = await getNeverLandingStats();
