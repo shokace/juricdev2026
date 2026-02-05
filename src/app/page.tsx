@@ -1,7 +1,7 @@
 import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
-import OpenAIUsage from "@/components/openai-usage";
+import AnthropicUsage from "@/components/anthropic-usage";
 import { fetchGithubContributionGrid } from "@/lib/github";
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
@@ -187,11 +187,10 @@ export default async function Home() {
               <GithubActivity />
             </Panel>
 
-            <Panel title="AI Usage">
-              <OpenAIUsage />
+            <Panel title="Claude Usage">
+              <AnthropicUsage />
             </Panel>
 
-            
           </div>
         </section>
 
