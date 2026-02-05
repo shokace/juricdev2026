@@ -41,7 +41,7 @@ export default function AnthropicUsage() {
     };
 
     fetchUsage();
-    const interval = setInterval(fetchUsage, 60000);
+    const interval = setInterval(fetchUsage, 5 * 60 * 1000); // Check every 5 minutes
     return () => {
       isMounted = false;
       clearInterval(interval);

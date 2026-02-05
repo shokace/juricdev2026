@@ -32,7 +32,7 @@ type UsageTotals = {
   updated_at: number;
 };
 
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 let cached: UsageTotals | null = null;
 let cachedAt = 0;
 
@@ -80,8 +80,15 @@ export async function GET() {
     );
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+
+      // If rate limited and we have cached data, return it even if stale
+      if (errorData.error?.type === "rate_limit_error" && cached) {
+        return NextResponse.json(cached);
+      }
+
       return NextResponse.json(
-        { error: "Failed to fetch Anthropic usage." },
+        { error: `Failed to fetch Anthropic usage: ${errorData.error?.message || "Unknown error"}` },
         { status: 502 }
       );
     }
