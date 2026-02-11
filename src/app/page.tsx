@@ -76,15 +76,15 @@ export default async function Home() {
               <div className="text-[0.7rem] uppercase tracking-[0.3em] text-faint">Profile</div>
               <h1 className="mt-3 text-3xl text-[color:var(--text0)]">Petar Juric</h1>
               <p className="mt-2 text-[0.85rem] uppercase tracking-[0.25em] text-muted">
-                Software Engineer · Hardware Connoisseur
+                Software Engineer
               </p>
             </div>
-            <div className="flex flex-wrap gap-3 text-[0.7rem] uppercase tracking-[0.2em] text-faint">
+            <div className="grid w-full min-w-0 grid-cols-3 gap-2 text-[0.62rem] uppercase tracking-[0.12em] text-faint sm:text-[0.7rem] sm:tracking-[0.2em] md:w-auto md:gap-3">
               {links.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className="rounded-sm border border-[color:var(--border2)] px-3 py-2 hover:border-[color:var(--border)]"
+                  className="rounded-sm border border-[color:var(--border2)] px-2 py-2 text-center whitespace-nowrap hover:border-[color:var(--border)] sm:px-3"
                   target="_blank"
                   rel="noreferrer"
                 >
