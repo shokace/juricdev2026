@@ -222,7 +222,7 @@ export default function Globe3D() {
   }, []);
 
   return (
-    <div className="mx-auto h-[22rem] w-[22rem] overflow-visible">
+    <div className="mx-auto h-[clamp(16rem,78vw,22rem)] w-[clamp(16rem,78vw,22rem)] max-w-full overflow-visible">
       <Canvas
         camera={{ position: [0, 0, 3.5], fov: 34 }}
         gl={{ alpha: true, antialias: true }}
