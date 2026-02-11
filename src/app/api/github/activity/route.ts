@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "edge";
+const TARGET_ITEMS = 5;
 
 type GithubEvent = {
   id: string;
@@ -27,13 +28,17 @@ export const revalidate = 300;
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const username = searchParams.get("user") ?? "shokace";
+  const githubToken = process.env.GITHUB_TOKEN;
 
-  const headers = {
+  const headers: Record<string, string> = {
     "User-Agent": "juricdev2026",
     Accept: "application/vnd.github+json",
   };
+  if (githubToken) {
+    headers.Authorization = `Bearer ${githubToken}`;
+  }
 
-  const response = await fetch(`https://api.github.com/users/${username}/events/public`, {
+  const response = await fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, {
     headers,
     next: { revalidate },
   });
@@ -74,9 +79,9 @@ export async function GET(request: Request) {
     }
   }
 
-  if (items.length < 4) {
+  if (items.length < TARGET_ITEMS) {
     const reposResponse = await fetch(
-      `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`,
+      `https://api.github.com/users/${username}/repos?sort=updated&per_page=25`,
       { headers, next: { revalidate } }
     );
 
@@ -87,7 +92,7 @@ export async function GET(request: Request) {
       }>;
 
       for (const repo of repos) {
-        if (items.length >= 4) {
+        if (items.length >= TARGET_ITEMS) {
           break;
         }
         const commitsResponse = await fetch(
@@ -125,8 +130,15 @@ export async function GET(request: Request) {
     }
   }
 
+  const sorted = items
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+    .slice(0, TARGET_ITEMS);
+
   return NextResponse.json({
     user: username,
-    items: items.slice(0, 4),
+    items: sorted,
   });
 }
