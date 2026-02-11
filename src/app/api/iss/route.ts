@@ -5,6 +5,7 @@ export const revalidate = 0;
 
 const ISS_TRAIL_WINDOW_MS = 30 * 60 * 1000;
 const ISS_TRAIL_KEY = "iss-trail-points-v1";
+const ISS_KV_WRITE_INTERVAL_MS = 2 * 60 * 1000;
 
 type IssResponse = {
   message: string;
@@ -24,6 +25,23 @@ type IssTrailPoint = {
 type IssRouteResponse = IssResponse & {
   trail: IssTrailPoint[];
 };
+
+declare global {
+  var __issKvWriteBlockedUntil: number | undefined;
+}
+
+function getNextUtcMidnightMs(now: number): number {
+  const date = new Date(now);
+  return Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate() + 1,
+    0,
+    0,
+    0,
+    0
+  );
+}
 
 function pruneTrail(points: IssTrailPoint[], now: number): IssTrailPoint[] {
   return points.filter((point) => now - point.ts <= ISS_TRAIL_WINDOW_MS);
@@ -112,7 +130,7 @@ async function loadTrail(config: KvConfig): Promise<IssTrailPoint[]> {
   }
 }
 
-async function saveTrail(config: KvConfig, trail: IssTrailPoint[]): Promise<void> {
+async function saveTrail(config: KvConfig, trail: IssTrailPoint[]): Promise<boolean> {
   const response = await fetch(kvValueUrl(config), {
     method: "PUT",
     headers: {
@@ -122,9 +140,20 @@ async function saveTrail(config: KvConfig, trail: IssTrailPoint[]): Promise<void
     body: JSON.stringify(trail),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to write ISS trail to Cloudflare KV.");
+  if (response.ok) {
+    return true;
   }
+
+  const body = (await response.text()).toLowerCase();
+  const quotaExceeded =
+    body.includes("daily limit") || body.includes("1000 workers kv put operations");
+
+  if (quotaExceeded) {
+    globalThis.__issKvWriteBlockedUntil = getNextUtcMidnightMs(Date.now());
+    return false;
+  }
+
+  throw new Error("Failed to write ISS trail to Cloudflare KV.");
 }
 
 async function getSnapshot(): Promise<IssRouteResponse> {
@@ -143,17 +172,25 @@ async function getSnapshot(): Promise<IssRouteResponse> {
 
   const lat = Number(payload.iss_position.latitude);
   const lon = Number(payload.iss_position.longitude);
+  let shouldPersistPoint = false;
+
   if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
     const last = trail[trail.length - 1];
-    const isDuplicate = Boolean(last && last.lat === lat && last.lon === lon);
-    if (!isDuplicate) {
+    const isDuplicatePosition = Boolean(last && last.lat === lat && last.lon === lon);
+    const enoughTimeElapsed = !last || now - last.ts >= ISS_KV_WRITE_INTERVAL_MS;
+    shouldPersistPoint = Boolean(!isDuplicatePosition && enoughTimeElapsed);
+    if (shouldPersistPoint) {
       trail = [...trail, { lat, lon, ts: now }];
     }
   }
 
   trail = pruneTrail(trail, now);
 
-  if (kvConfig) {
+  const isWriteBlocked =
+    typeof globalThis.__issKvWriteBlockedUntil === "number" &&
+    now < globalThis.__issKvWriteBlockedUntil;
+
+  if (kvConfig && shouldPersistPoint && !isWriteBlocked) {
     try {
       await saveTrail(kvConfig, trail);
     } catch {
