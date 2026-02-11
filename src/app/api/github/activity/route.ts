@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 const TARGET_ITEMS = 5;
+const GITHUB_TIMEOUT_MS = 4000;
 
 type GithubEvent = {
   id: string;
@@ -25,6 +26,29 @@ type ActivityItem = {
 
 export const revalidate = 300;
 
+async function fetchGithubJson<T>(
+  url: string,
+  headers: Record<string, string>
+): Promise<T | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GITHUB_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      headers,
+      next: { revalidate },
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const username = searchParams.get("user") ?? "shokace";
@@ -38,19 +62,11 @@ export async function GET(request: Request) {
     headers.Authorization = `Bearer ${githubToken}`;
   }
 
-  const response = await fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, {
-    headers,
-    next: { revalidate },
-  });
-
-  if (!response.ok) {
-    return NextResponse.json(
-      { error: "Failed to fetch GitHub events." },
-      { status: 502 }
-    );
-  }
-
-  const events = (await response.json()) as GithubEvent[];
+  const events =
+    (await fetchGithubJson<GithubEvent[]>(
+      `https://api.github.com/users/${username}/events/public?per_page=100`,
+      headers
+    )) ?? [];
   const items: ActivityItem[] = [];
 
   for (const event of events) {
@@ -80,39 +96,38 @@ export async function GET(request: Request) {
   }
 
   if (items.length < TARGET_ITEMS) {
-    const reposResponse = await fetch(
-      `https://api.github.com/users/${username}/repos?sort=updated&per_page=25`,
-      { headers, next: { revalidate } }
-    );
+    const repos =
+      (await fetchGithubJson<
+        Array<{
+          name: string;
+          full_name: string;
+        }>
+      >(`https://api.github.com/users/${username}/repos?sort=updated&per_page=25`, headers)) ??
+      [];
 
-    if (reposResponse.ok) {
-      const repos = (await reposResponse.json()) as Array<{
-        name: string;
-        full_name: string;
-      }>;
+    if (repos.length) {
+      const fallbackCommits = await Promise.all(
+        repos.slice(0, 12).map(async (repo) => {
+          const commits = await fetchGithubJson<
+            Array<{
+              sha: string;
+              commit: { message: string };
+              html_url: string;
+            }>
+          >(`https://api.github.com/repos/${repo.full_name}/commits?per_page=1`, headers);
+          const commit = commits?.[0];
+          return commit ? { repo, commit } : null;
+        })
+      );
 
-      for (const repo of repos) {
+      for (const entry of fallbackCommits) {
         if (items.length >= TARGET_ITEMS) {
           break;
         }
-        const commitsResponse = await fetch(
-          `https://api.github.com/repos/${repo.full_name}/commits?per_page=1`,
-          { headers, next: { revalidate } }
-        );
-
-        if (!commitsResponse.ok) {
+        if (!entry) {
           continue;
         }
-        const commits = (await commitsResponse.json()) as Array<{
-          sha: string;
-          commit: { message: string };
-          html_url: string;
-        }>;
-
-        const commit = commits[0];
-        if (!commit) {
-          continue;
-        }
+        const { repo, commit } = entry;
         const exists = items.some((item) => item.url === commit.html_url);
         if (exists) {
           continue;

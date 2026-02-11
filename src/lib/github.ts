@@ -12,6 +12,7 @@ export type GithubContributionGrid = {
   maxCol: number;
   cells: GithubContributionCell[];
 };
+const GITHUB_TIMEOUT_MS = 4000;
 
 function parseContributionCells(html: string): GithubContributionCell[] {
   const cellMatches = html.matchAll(
@@ -22,7 +23,7 @@ function parseContributionCells(html: string): GithubContributionCell[] {
   for (const match of cellMatches) {
     const tag = match[0];
     const attrs = Object.fromEntries(
-      [...tag.matchAll(/([a-zA-Z0-9:-]+)="([^"]*)"/g)].map(([_, key, value]) => [
+      [...tag.matchAll(/([a-zA-Z0-9:-]+)="([^"]*)"/g)].map(([, key, value]) => [
         key,
         value,
       ])
@@ -59,6 +60,8 @@ export async function fetchGithubContributionGrid(
   const to = `${year}-12-31`;
   const url = `https://github.com/users/${user}/contributions?from=${from}&to=${to}`;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GITHUB_TIMEOUT_MS);
   const response = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0",
@@ -66,6 +69,9 @@ export async function fetchGithubContributionGrid(
       Accept: "text/html",
     },
     next: { revalidate: 300 },
+    signal: controller.signal,
+  }).finally(() => {
+    clearTimeout(timeout);
   });
 
   if (!response.ok) {

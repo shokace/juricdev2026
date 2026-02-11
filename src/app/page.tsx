@@ -2,7 +2,10 @@ import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
 import AnthropicUsage from "@/components/anthropic-usage";
-import { fetchGithubContributionGrid } from "@/lib/github";
+import {
+  fetchGithubContributionGrid,
+  type GithubContributionGrid,
+} from "@/lib/github";
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
 const links = [
@@ -35,6 +38,24 @@ async function getNeverLandingStats(): Promise<NeverLandingStats | null> {
   }
 }
 
+function getEmptyGithubGrid(user: string, year: number): GithubContributionGrid {
+  return {
+    user,
+    year,
+    minCol: 0,
+    maxCol: 51,
+    cells: [],
+  };
+}
+
+async function getGithubGrid(user: string, year: number): Promise<GithubContributionGrid> {
+  try {
+    return await fetchGithubContributionGrid(user, year);
+  } catch {
+    return getEmptyGithubGrid(user, year);
+  }
+}
+
 function Panel({ title, children }: { title?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="hud-panel rounded-sm p-4">
@@ -53,9 +74,11 @@ export const dynamic = "force-dynamic";
 export const runtime = "edge";
 
 export default async function Home() {
-  const neverLandingStats = await getNeverLandingStats();
   const currentYear = new Date().getFullYear();
-  const githubGrid = await fetchGithubContributionGrid("shokace", currentYear);
+  const [neverLandingStats, githubGrid] = await Promise.all([
+    getNeverLandingStats(),
+    getGithubGrid("shokace", currentYear),
+  ]);
   const githubCellMap = new Map(
     githubGrid.cells.map((cell) => [`${cell.col}-${cell.row}`, cell.level])
   );
