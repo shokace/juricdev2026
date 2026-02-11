@@ -16,7 +16,6 @@ type IssPoint = {
   ts: number;
 };
 
-const ISS_STORAGE_KEY = "iss-trail-points";
 const ISS_TRAIL_WINDOW_MS = 30 * 60 * 1000;
 const ISS_RADIUS = 1.18;
 
@@ -145,6 +144,23 @@ function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
 export default function Globe3D() {
   const [issPoints, setIssPoints] = useState<IssPoint[]>([]);
   const [issTarget, setIssTarget] = useState<THREE.Vector3 | null>(null);
+
+  const normalizeTrail = (trail: unknown): IssPoint[] => {
+    if (!Array.isArray(trail)) {
+      return [];
+    }
+    return trail
+      .filter(
+        (point): point is IssPoint =>
+          typeof point === "object" &&
+          point !== null &&
+          typeof (point as IssPoint).lat === "number" &&
+          typeof (point as IssPoint).lon === "number" &&
+          typeof (point as IssPoint).ts === "number"
+      )
+      .sort((a, b) => a.ts - b.ts);
+  };
+
   const issVectors = useMemo(() => {
     return issPoints.map((point) => {
       const radius = ISS_RADIUS;
@@ -160,32 +176,6 @@ export default function Globe3D() {
   useEffect(() => {
     let isMounted = true;
 
-    const loadSaved = () => {
-      try {
-        const raw = localStorage.getItem(ISS_STORAGE_KEY);
-        if (!raw) {
-          return [];
-        }
-        const parsed = JSON.parse(raw) as IssPoint[];
-        if (!Array.isArray(parsed)) {
-          return [];
-        }
-        return parsed.filter(
-          (point) =>
-            typeof point.lat === "number" &&
-            typeof point.lon === "number" &&
-            typeof point.ts === "number"
-        );
-      } catch {
-        return [];
-      }
-    };
-
-    const saved = loadSaved();
-    if (saved.length) {
-      setIssPoints(saved);
-    }
-
     const fetchIss = async () => {
       try {
         const response = await fetch("/api/iss");
@@ -198,6 +188,7 @@ export default function Globe3D() {
         if (Number.isNaN(lat) || Number.isNaN(lon)) {
           return;
         }
+        const serverTrail = normalizeTrail(payload?.trail);
         const radius = ISS_RADIUS;
         const phi = (90 - lat) * (Math.PI / 180);
         const theta = (lon + 180) * (Math.PI / 180);
@@ -209,11 +200,12 @@ export default function Globe3D() {
           return;
         }
         setIssPoints((prev) => {
+          if (serverTrail.length) {
+            return serverTrail;
+          }
           const now = Date.now();
           const next = [...prev, { lat, lon, ts: now }];
-          const filtered = next.filter((point) => now - point.ts <= ISS_TRAIL_WINDOW_MS);
-          localStorage.setItem(ISS_STORAGE_KEY, JSON.stringify(filtered));
-          return filtered;
+          return next.filter((point) => now - point.ts <= ISS_TRAIL_WINDOW_MS);
         });
         setIssTarget(targetVector);
       } catch {
