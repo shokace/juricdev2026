@@ -2,6 +2,8 @@ import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
 import AnthropicUsage from "@/components/anthropic-usage";
+import WavEquation from "@/components/wav-equation";
+import FafrInfoButton from "@/components/fafr-info-button";
 import {
   fetchGithubContributionGrid,
   type GithubContributionGrid,
@@ -56,13 +58,21 @@ async function getGithubGrid(user: string, year: number): Promise<GithubContribu
   }
 }
 
-function Panel({ title, children }: { title?: React.ReactNode; children: React.ReactNode }) {
+function Panel({
+  title,
+  children,
+  headerRight,
+}: {
+  title?: React.ReactNode;
+  children: React.ReactNode;
+  headerRight?: React.ReactNode;
+}) {
   return (
     <section className="hud-panel rounded-sm p-4">
       {title ? (
         <div className="mb-4 flex items-center justify-between text-[0.7rem] uppercase tracking-[0.3em] text-faint">
           <span>{title}</span>
-          <span className="glow-red">●</span>
+          {headerRight ?? <span className="glow-red">●</span>}
         </div>
       ) : null}
       {children}
@@ -217,6 +227,24 @@ export default async function Home() {
 
           </div>
         </section>
+
+        <div className="mt-6">
+          <Panel
+            title={
+              <a
+                href="https://github.com/shokace/W2F"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-[color:var(--text0)]"
+              >
+                FAFR
+              </a>
+            }
+            headerRight={<FafrInfoButton />}
+          >
+            <WavEquation />
+          </Panel>
+        </div>
 
         <div className="mt-6">
           <Panel title={`GitHub Activity ${currentYear}`}>
