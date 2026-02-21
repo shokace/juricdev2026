@@ -19,6 +19,41 @@ type IssPoint = {
 const ISS_TRAIL_WINDOW_MS = 30 * 60 * 1000;
 const ISS_RADIUS = 1.18;
 
+function normalizeTrail(trail: unknown): IssPoint[] {
+  if (!Array.isArray(trail)) {
+    return [];
+  }
+
+  return trail
+    .filter(
+      (point): point is IssPoint =>
+        typeof point === "object" &&
+        point !== null &&
+        typeof (point as IssPoint).lat === "number" &&
+        typeof (point as IssPoint).lon === "number" &&
+        typeof (point as IssPoint).ts === "number"
+    )
+    .sort((a, b) => a.ts - b.ts);
+}
+
+function buildTrailKey(point: IssPoint): string {
+  return `${point.ts}:${point.lat.toFixed(4)}:${point.lon.toFixed(4)}`;
+}
+
+function mergeTrails(now: number, trailGroups: IssPoint[][]): IssPoint[] {
+  const deduped = new Map<string, IssPoint>();
+
+  for (const group of trailGroups) {
+    for (const point of group) {
+      deduped.set(buildTrailKey(point), point);
+    }
+  }
+
+  return Array.from(deduped.values())
+    .sort((a, b) => a.ts - b.ts)
+    .filter((point) => now - point.ts <= ISS_TRAIL_WINDOW_MS);
+}
+
 function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
   const issRef = useRef<THREE.Mesh>(null);
@@ -145,22 +180,6 @@ export default function Globe3D() {
   const [issPoints, setIssPoints] = useState<IssPoint[]>([]);
   const [issTarget, setIssTarget] = useState<THREE.Vector3 | null>(null);
 
-  const normalizeTrail = (trail: unknown): IssPoint[] => {
-    if (!Array.isArray(trail)) {
-      return [];
-    }
-    return trail
-      .filter(
-        (point): point is IssPoint =>
-          typeof point === "object" &&
-          point !== null &&
-          typeof (point as IssPoint).lat === "number" &&
-          typeof (point as IssPoint).lon === "number" &&
-          typeof (point as IssPoint).ts === "number"
-      )
-      .sort((a, b) => a.ts - b.ts);
-  };
-
   const issVectors = useMemo(() => {
     return issPoints.map((point) => {
       const radius = ISS_RADIUS;
@@ -189,6 +208,11 @@ export default function Globe3D() {
           return;
         }
         const serverTrail = normalizeTrail(payload?.trail);
+        const timestampSeconds = Number(payload?.timestamp);
+        const pointTimestamp = Number.isFinite(timestampSeconds)
+          ? timestampSeconds * 1000
+          : Date.now();
+
         const radius = ISS_RADIUS;
         const phi = (90 - lat) * (Math.PI / 180);
         const theta = (lon + 180) * (Math.PI / 180);
@@ -200,12 +224,9 @@ export default function Globe3D() {
           return;
         }
         setIssPoints((prev) => {
-          if (serverTrail.length) {
-            return serverTrail;
-          }
           const now = Date.now();
-          const next = [...prev, { lat, lon, ts: now }];
-          return next.filter((point) => now - point.ts <= ISS_TRAIL_WINDOW_MS);
+          const livePoint: IssPoint = { lat, lon, ts: pointTimestamp };
+          return mergeTrails(now, [prev, serverTrail, [livePoint]]);
         });
         setIssTarget(targetVector);
       } catch {
