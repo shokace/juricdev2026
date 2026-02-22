@@ -16,8 +16,8 @@ type IssPoint = {
   ts: number;
 };
 
-const ISS_TRAIL_WINDOW_MS = 30 * 60 * 1000;
 const ISS_RADIUS = 1.18;
+const ISS_TRAIL_MAX_POINTS = 2400;
 
 function normalizeTrail(trail: unknown): IssPoint[] {
   if (!Array.isArray(trail)) {
@@ -40,7 +40,7 @@ function buildTrailKey(point: IssPoint): string {
   return `${point.ts}:${point.lat.toFixed(4)}:${point.lon.toFixed(4)}`;
 }
 
-function mergeTrails(now: number, trailGroups: IssPoint[][]): IssPoint[] {
+function mergeTrails(trailGroups: IssPoint[][]): IssPoint[] {
   const deduped = new Map<string, IssPoint>();
 
   for (const group of trailGroups) {
@@ -49,9 +49,12 @@ function mergeTrails(now: number, trailGroups: IssPoint[][]): IssPoint[] {
     }
   }
 
-  return Array.from(deduped.values())
-    .sort((a, b) => a.ts - b.ts)
-    .filter((point) => now - point.ts <= ISS_TRAIL_WINDOW_MS);
+  const merged = Array.from(deduped.values()).sort((a, b) => a.ts - b.ts);
+  if (merged.length <= ISS_TRAIL_MAX_POINTS) {
+    return merged;
+  }
+
+  return merged.slice(-ISS_TRAIL_MAX_POINTS);
 }
 
 function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
@@ -224,9 +227,8 @@ export default function Globe3D() {
           return;
         }
         setIssPoints((prev) => {
-          const now = Date.now();
           const livePoint: IssPoint = { lat, lon, ts: pointTimestamp };
-          return mergeTrails(now, [prev, serverTrail, [livePoint]]);
+          return mergeTrails([prev, serverTrail, [livePoint]]);
         });
         setIssTarget(targetVector);
       } catch {

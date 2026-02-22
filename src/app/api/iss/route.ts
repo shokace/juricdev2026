@@ -4,9 +4,9 @@ export const runtime = "edge";
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
-const ISS_TRAIL_WINDOW_MS = 30 * 60 * 1000;
 const ISS_TRAIL_KEY = "iss-trail-points-v1";
 const ISS_KV_WRITE_INTERVAL_MS = 2 * 60 * 1000;
+const ISS_TRAIL_MAX_POINTS = 2400;
 
 type IssResponse = {
   message: string;
@@ -44,8 +44,12 @@ function getNextUtcMidnightMs(now: number): number {
   );
 }
 
-function pruneTrail(points: IssTrailPoint[], now: number): IssTrailPoint[] {
-  return points.filter((point) => now - point.ts <= ISS_TRAIL_WINDOW_MS);
+function trimTrail(points: IssTrailPoint[]): IssTrailPoint[] {
+  if (points.length <= ISS_TRAIL_MAX_POINTS) {
+    return points;
+  }
+
+  return points.slice(-ISS_TRAIL_MAX_POINTS);
 }
 
 function normalizeTrail(input: unknown): IssTrailPoint[] {
@@ -188,7 +192,7 @@ async function getSnapshot(): Promise<IssRouteResponse> {
     }
   }
 
-  trail = pruneTrail(trail, now);
+  trail = trimTrail(trail);
 
   const isWriteBlocked =
     typeof globalThis.__issKvWriteBlockedUntil === "number" &&
