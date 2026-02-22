@@ -29,7 +29,7 @@ export default function IssTelemetry() {
 
     const fetchIss = async () => {
       try {
-        const response = await fetch("/api/iss");
+        const response = await fetch("/api/iss", { cache: "no-store" });
         if (!response.ok) {
           if (isMounted) {
             setState((prev) => ({ ...prev, status: "UNSTABLE" }));

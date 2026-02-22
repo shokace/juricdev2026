@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 const ISS_TRAIL_WINDOW_MS = 30 * 60 * 1000;
 const ISS_TRAIL_KEY = "iss-trail-points-v1";
@@ -88,7 +89,10 @@ type KvConfig = {
 };
 
 function getKvConfig(): KvConfig | null {
-  const token = process.env.KVTok;
+  const token =
+    process.env.KVTok ??
+    process.env.CLOUDFLARE_KV_API_TOKEN ??
+    process.env.CLOUDFLARE_API_TOKEN;
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID_ISS;
 
@@ -204,11 +208,24 @@ async function getSnapshot(): Promise<IssRouteResponse> {
 export async function GET() {
   try {
     const snapshot = await getSnapshot();
-    return NextResponse.json(snapshot);
+    return NextResponse.json(snapshot, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
   } catch {
     return NextResponse.json(
       { error: "Failed to fetch ISS position." },
-      { status: 502 }
+      {
+        status: 502,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
     );
   }
 }

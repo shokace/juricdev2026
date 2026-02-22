@@ -197,7 +197,7 @@ export default function Globe3D() {
 
     const fetchIss = async () => {
       try {
-        const response = await fetch("/api/iss");
+        const response = await fetch("/api/iss", { cache: "no-store" });
         if (!response.ok) {
           return;
         }
