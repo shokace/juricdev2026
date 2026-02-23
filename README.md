@@ -38,6 +38,20 @@ wrangler kv namespace create ISS_TRAIL
 
 If these variables are missing, `/api/iss` still returns live ISS position, but trail persistence is disabled.
 
+## ISS Background Refresh (No Visitor Required)
+
+By default, `/api/iss` only runs when someone loads the site. If you want the trail database to keep updating when nobody is visiting, deploy the cron worker:
+
+```bash
+cd cloudflare/iss-cron
+npx wrangler deploy
+```
+
+This worker calls your production ISS endpoint every minute (`*/1 * * * *`) so KV keeps getting refreshed in the background.
+
+- Worker config: `/Users/ezkie/Repos/juricDev2026/cloudflare/iss-cron/wrangler.toml`
+- Update `ISS_REFRESH_URL` in `wrangler.toml` if needed.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

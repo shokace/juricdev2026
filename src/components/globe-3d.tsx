@@ -6,7 +6,7 @@ import * as THREE from "three";
 
 type GlobeMeshProps = {
   size?: number;
-  issPositions: THREE.Vector3[];
+  issPoints: IssPoint[];
   issTarget: THREE.Vector3 | null;
 };
 
@@ -18,6 +18,7 @@ type IssPoint = {
 
 const ISS_RADIUS = 1.18;
 const ISS_TRAIL_MAX_POINTS = 2400;
+const ISS_TRAIL_SEGMENT_GAP_MS = 8 * 60 * 1000;
 
 function normalizeTrail(trail: unknown): IssPoint[] {
   if (!Array.isArray(trail)) {
@@ -57,7 +58,55 @@ function mergeTrails(trailGroups: IssPoint[][]): IssPoint[] {
   return merged.slice(-ISS_TRAIL_MAX_POINTS);
 }
 
-function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
+function toIssVector(point: IssPoint): THREE.Vector3 {
+  const phi = (90 - point.lat) * (Math.PI / 180);
+  const theta = (point.lon + 180) * (Math.PI / 180);
+  const x = -ISS_RADIUS * Math.sin(phi) * Math.cos(theta);
+  const z = ISS_RADIUS * Math.sin(phi) * Math.sin(theta);
+  const y = ISS_RADIUS * Math.cos(phi);
+  return new THREE.Vector3(x, y, z);
+}
+
+function interpolateArc(start: THREE.Vector3, end: THREE.Vector3): THREE.Vector3[] {
+  const a = start.clone().normalize();
+  const b = end.clone().normalize();
+  const angle = a.angleTo(b);
+  if (!Number.isFinite(angle) || angle === 0) {
+    return [start.clone(), end.clone()];
+  }
+
+  const steps = Math.max(2, Math.ceil(angle / (Math.PI / 90)));
+  const axis = new THREE.Vector3().crossVectors(a, b);
+
+  if (axis.lengthSq() < 1e-10) {
+    const fallback: THREE.Vector3[] = [];
+    for (let i = 0; i <= steps; i += 1) {
+      const t = i / steps;
+      fallback.push(a.clone().lerp(b, t).normalize().multiplyScalar(ISS_RADIUS));
+    }
+    return fallback;
+  }
+
+  axis.normalize();
+  const points: THREE.Vector3[] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const t = i / steps;
+    const q = new THREE.Quaternion().setFromAxisAngle(axis, angle * t);
+    points.push(a.clone().applyQuaternion(q).normalize().multiplyScalar(ISS_RADIUS));
+  }
+  return points;
+}
+
+function buildTrailGeometry(points: THREE.Vector3[]): THREE.TubeGeometry | null {
+  if (points.length < 2) {
+    return null;
+  }
+
+  const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
+  return new THREE.TubeGeometry(curve, Math.max(80, points.length * 2), 0.012, 8, false);
+}
+
+function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
   const issRef = useRef<THREE.Mesh>(null);
   const currentIssRef = useRef<THREE.Vector3>(new THREE.Vector3());
@@ -68,6 +117,8 @@ function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
   earthTexture.anisotropy = 8;
   earthTexture.minFilter = THREE.LinearMipmapLinearFilter;
   earthTexture.magFilter = THREE.LinearFilter;
+
+  const issPositions = useMemo(() => issPoints.map(toIssVector), [issPoints]);
 
   useFrame((_state, delta) => {
     if (groupRef.current && issPositions.length) {
@@ -117,13 +168,40 @@ function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
     }
   });
 
-  const trailGeometry = useMemo(() => {
-    if (issPositions.length < 2) {
-      return null;
+  const trailGeometries = useMemo(() => {
+    if (issPoints.length < 2) {
+      return [] as THREE.TubeGeometry[];
     }
-    const curve = new THREE.CatmullRomCurve3(issPositions);
-    return new THREE.TubeGeometry(curve, 120, 0.012, 8, false);
-  }, [issPositions]);
+
+    const result: THREE.TubeGeometry[] = [];
+    let currentSegment: THREE.Vector3[] = [toIssVector(issPoints[0])];
+
+    for (let i = 1; i < issPoints.length; i += 1) {
+      const prevPoint = issPoints[i - 1];
+      const nextPoint = issPoints[i];
+      const start = toIssVector(prevPoint);
+      const end = toIssVector(nextPoint);
+
+      if (nextPoint.ts - prevPoint.ts > ISS_TRAIL_SEGMENT_GAP_MS) {
+        const geometry = buildTrailGeometry(currentSegment);
+        if (geometry) {
+          result.push(geometry);
+        }
+        currentSegment = [end];
+        continue;
+      }
+
+      const arcPoints = interpolateArc(start, end);
+      currentSegment.push(...arcPoints.slice(1));
+    }
+
+    const geometry = buildTrailGeometry(currentSegment);
+    if (geometry) {
+      result.push(geometry);
+    }
+
+    return result;
+  }, [issPoints]);
 
   return (
     <group ref={groupRef} scale={0.88}>
@@ -164,11 +242,11 @@ function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
       </mesh>
       {issPositions.length ? (
         <>
-          {trailGeometry ? (
-            <mesh geometry={trailGeometry}>
+          {trailGeometries.map((geometry, index) => (
+            <mesh key={`trail-${index}`} geometry={geometry}>
               <meshBasicMaterial color="rgba(80,160,255,0.75)" transparent opacity={0.8} />
             </mesh>
-          ) : null}
+          ))}
           <mesh ref={issRef} position={issPositions[issPositions.length - 1]}>
             <sphereGeometry args={[0.02, 16, 16]} />
             <meshBasicMaterial color="rgba(80,160,255,0.9)" />
@@ -182,18 +260,6 @@ function GlobeMesh({ size = 1, issPositions, issTarget }: GlobeMeshProps) {
 export default function Globe3D() {
   const [issPoints, setIssPoints] = useState<IssPoint[]>([]);
   const [issTarget, setIssTarget] = useState<THREE.Vector3 | null>(null);
-
-  const issVectors = useMemo(() => {
-    return issPoints.map((point) => {
-      const radius = ISS_RADIUS;
-      const phi = (90 - point.lat) * (Math.PI / 180);
-      const theta = (point.lon + 180) * (Math.PI / 180);
-      const x = -radius * Math.sin(phi) * Math.cos(theta);
-      const z = radius * Math.sin(phi) * Math.sin(theta);
-      const y = radius * Math.cos(phi);
-      return new THREE.Vector3(x, y, z);
-    });
-  }, [issPoints]);
 
   useEffect(() => {
     let isMounted = true;
@@ -252,7 +318,7 @@ export default function Globe3D() {
         style={{ width: "100%", height: "100%" }}
       >
         <ambientLight intensity={0.6} />
-        <GlobeMesh size={1.0} issPositions={issVectors} issTarget={issTarget} />
+        <GlobeMesh size={1.0} issPoints={issPoints} issTarget={issTarget} />
       </Canvas>
     </div>
   );
