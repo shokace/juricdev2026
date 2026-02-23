@@ -19,6 +19,7 @@ type IssPoint = {
 const ISS_RADIUS = 1.18;
 const ISS_TRAIL_MAX_POINTS = 2400;
 const ISS_TRAIL_SEGMENT_GAP_MS = 8 * 60 * 1000;
+const ISS_TRAIL_MAX_ANGULAR_DISTANCE = Math.PI;
 
 function normalizeTrail(trail: unknown): IssPoint[] {
   if (!Array.isArray(trail)) {
@@ -56,6 +57,45 @@ function mergeTrails(trailGroups: IssPoint[][]): IssPoint[] {
   }
 
   return merged.slice(-ISS_TRAIL_MAX_POINTS);
+}
+
+function toUnitVector(point: IssPoint): THREE.Vector3 {
+  return toIssVector(point).normalize();
+}
+
+function getVisibleTrailPoints(points: IssPoint[]): IssPoint[] {
+  if (points.length < 2) {
+    return points;
+  }
+
+  const visible: IssPoint[] = [points[points.length - 1]];
+  let totalAngle = 0;
+
+  for (let index = points.length - 2; index >= 0; index -= 1) {
+    const olderPoint = points[index];
+    const newerPoint = visible[0];
+
+    if (newerPoint.ts - olderPoint.ts > ISS_TRAIL_SEGMENT_GAP_MS) {
+      break;
+    }
+
+    const olderVector = toUnitVector(olderPoint);
+    const newerVector = toUnitVector(newerPoint);
+    const angle = olderVector.angleTo(newerVector);
+
+    if (!Number.isFinite(angle) || angle <= 0) {
+      continue;
+    }
+
+    if (totalAngle + angle > ISS_TRAIL_MAX_ANGULAR_DISTANCE) {
+      break;
+    }
+
+    visible.unshift(olderPoint);
+    totalAngle += angle;
+  }
+
+  return visible;
 }
 
 function toIssVector(point: IssPoint): THREE.Vector3 {
@@ -119,6 +159,7 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
   earthTexture.magFilter = THREE.LinearFilter;
 
   const issPositions = useMemo(() => issPoints.map(toIssVector), [issPoints]);
+  const visibleTrailPoints = useMemo(() => getVisibleTrailPoints(issPoints), [issPoints]);
 
   useFrame((_state, delta) => {
     if (groupRef.current && issPositions.length) {
@@ -169,16 +210,16 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
   });
 
   const trailGeometries = useMemo(() => {
-    if (issPoints.length < 2) {
+    if (visibleTrailPoints.length < 2) {
       return [] as THREE.TubeGeometry[];
     }
 
     const result: THREE.TubeGeometry[] = [];
-    let currentSegment: THREE.Vector3[] = [toIssVector(issPoints[0])];
+    let currentSegment: THREE.Vector3[] = [toIssVector(visibleTrailPoints[0])];
 
-    for (let i = 1; i < issPoints.length; i += 1) {
-      const prevPoint = issPoints[i - 1];
-      const nextPoint = issPoints[i];
+    for (let i = 1; i < visibleTrailPoints.length; i += 1) {
+      const prevPoint = visibleTrailPoints[i - 1];
+      const nextPoint = visibleTrailPoints[i];
       const start = toIssVector(prevPoint);
       const end = toIssVector(nextPoint);
 
@@ -201,7 +242,7 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
     }
 
     return result;
-  }, [issPoints]);
+  }, [visibleTrailPoints]);
 
   return (
     <group ref={groupRef} scale={0.88}>
