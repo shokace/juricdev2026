@@ -134,7 +134,7 @@ export default async function Home() {
               <div className="space-y-4 text-[0.75rem] uppercase tracking-[0.2em] text-muted">
                 <div className="flex items-center justify-between">
                   <span>Location</span>
-                  <span className="text-[color:var(--text0)]">Croatia</span>
+                  <span className="text-[color:var(--text0)]">United States / Europe</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Availability</span>
@@ -149,8 +149,10 @@ export default async function Home() {
 
             <Panel title="Mission Brief">
               <p className="text-[0.72rem] uppercase leading-6 tracking-[0.2em] text-muted">
-                Software engineer with experience in real-time C++ and embedded hardware. 
-                Qt/Python tooling, DSP audio, and cloud workflows.
+                Software engineer focused on recent work in real-time data visualization,
+                machine learning, DSP audio, and investigative software. Current projects span
+                satellite tracking, lip-reading inference, healthcare review tooling, and
+                signal-focused web systems.
               </p>
             </Panel>
 
