@@ -141,7 +141,7 @@ export default async function Home() {
                   <span className="text-[color:#f59e0b]">Contracted</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Focus</span>
+                  <span>Current Field</span>
                   <span className="text-[color:var(--text0)]">Telecom</span>
                 </div>
               </div>
