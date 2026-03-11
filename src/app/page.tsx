@@ -134,7 +134,7 @@ export default async function Home() {
               <div className="space-y-4 text-[0.75rem] uppercase tracking-[0.2em] text-muted">
                 <div className="flex items-center justify-between">
                   <span>Location</span>
-                  <span className="text-[color:var(--text0)]">United States / Europe</span>
+                  <span className="text-[color:var(--text0)]">USA / EU</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Availability</span>
@@ -149,10 +149,8 @@ export default async function Home() {
 
             <Panel title="About Me">
               <p className="text-[0.72rem] uppercase leading-6 tracking-[0.2em] text-muted">
-                Software engineer focused on recent work in real-time data visualization,
-                machine learning, and DSP audio. Current projects span satellite tracking,
-                lip-reading inference, healthcare review tooling, and signal-focused web
-                systems.
+                Software engineer focused on real-time data visualization, machine learning,
+                and performance-driven real-time systems.
               </p>
             </Panel>
 
