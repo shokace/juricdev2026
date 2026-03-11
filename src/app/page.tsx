@@ -147,12 +147,12 @@ export default async function Home() {
               </div>
             </Panel>
 
-            <Panel title="Mission Brief">
+            <Panel title="About Me">
               <p className="text-[0.72rem] uppercase leading-6 tracking-[0.2em] text-muted">
                 Software engineer focused on recent work in real-time data visualization,
-                machine learning, DSP audio, and investigative software. Current projects span
-                satellite tracking, lip-reading inference, healthcare review tooling, and
-                signal-focused web systems.
+                machine learning, and DSP audio. Current projects span satellite tracking,
+                lip-reading inference, healthcare review tooling, and signal-focused web
+                systems.
               </p>
             </Panel>
 
