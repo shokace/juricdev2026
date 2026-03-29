@@ -13,7 +13,7 @@ import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlandi
 const links = [
   { label: "GitHub", href: "https://github.com/shokace/" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/pjuric/" },
-  { label: "X / Twitter", href: "https://x.com/Ezkie_Music" },
+  { label: "X / Twitter", mobileLabel: "X", href: "https://x.com/Ezkie_Music" },
   { label: "Music", href: "https://linktr.ee/ezkie" },
 ];
 
@@ -103,7 +103,7 @@ export default async function Home() {
 
   return (
     <div className="hud-grid hud-noise min-h-screen">
-      <main className="relative z-10 mx-auto max-w-6xl px-6 py-10">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         <Panel>
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
@@ -113,16 +113,18 @@ export default async function Home() {
                 Software Engineer
               </p>
             </div>
-            <div className="grid w-full min-w-0 grid-cols-4 gap-1.5 text-[0.52rem] uppercase tracking-[0.06em] text-faint sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
+            <div className="grid w-full min-w-0 grid-cols-4 gap-1 text-[0.48rem] uppercase tracking-[0.04em] text-faint [@media(min-width:375px)]:gap-1.5 [@media(min-width:375px)]:text-[0.52rem] [@media(min-width:375px)]:tracking-[0.06em] sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
               {links.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className="flex min-h-[2.75rem] items-center justify-center rounded-sm border border-[color:var(--border2)] px-1.5 py-2 text-center leading-tight hover:border-[color:var(--border)] sm:px-2.5 md:px-3"
+                  aria-label={link.label}
+                  className="flex min-w-0 min-h-[2.75rem] items-center justify-center rounded-sm border border-[color:var(--border2)] px-1 py-2 text-center leading-tight break-words hover:border-[color:var(--border)] [@media(min-width:375px)]:px-1.5 sm:px-2.5 md:px-3"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {link.label}
+                  <span className="sm:hidden">{link.mobileLabel ?? link.label}</span>
+                  <span className="hidden sm:inline">{link.label}</span>
                 </a>
               ))}
             </div>
