@@ -11,11 +11,44 @@ import {
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
 const links = [
-  { label: "GitHub", href: "https://github.com/shokace/" },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/pjuric/" },
-  { label: "X / Twitter", mobileLabel: "X", href: "https://x.com/Ezkie_Music" },
-  { label: "Music", href: "https://linktr.ee/ezkie" },
+  { label: "GitHub", href: "https://github.com/shokace/", icon: "github" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/pjuric/", icon: "linkedin" },
+  { label: "X / Twitter", href: "https://x.com/Ezkie_Music", icon: "x" },
+  { label: "Music", href: "https://linktr.ee/ezkie", icon: "music" },
 ];
+
+function HeaderIcon({ icon }: { icon: (typeof links)[number]["icon"] }) {
+  const className = "h-5 w-5 text-[color:var(--text0)] sm:h-5.5 sm:w-5.5";
+
+  switch (icon) {
+    case "github":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.59 2 12.25c0 4.53 2.87 8.37 6.84 9.72.5.1.66-.22.66-.5 0-.25-.01-.91-.01-1.79-2.78.62-3.37-1.38-3.37-1.38-.46-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .08 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.15-4.56-5.1 0-1.13.39-2.05 1.03-2.78-.1-.26-.45-1.3.1-2.72 0 0 .84-.28 2.75 1.06A9.3 9.3 0 0 1 12 6.8a9.3 9.3 0 0 1 2.5.35c1.9-1.34 2.75-1.06 2.75-1.06.54 1.42.2 2.46.1 2.72.64.73 1.03 1.65 1.03 2.78 0 3.96-2.34 4.83-4.57 5.08.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .28.18.61.67.5A10.27 10.27 0 0 0 22 12.25C22 6.59 17.52 2 12 2Z" />
+        </svg>
+      );
+    case "linkedin":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+          <path d="M6.94 8.5H3.56V20h3.38V8.5Zm.22-3.56C7.15 3.84 6.28 3 5.26 3S3.38 3.84 3.38 4.94c0 1.07.84 1.94 1.86 1.94h.02c1.03 0 1.9-.87 1.9-1.94ZM20.62 13.01c0-3.53-1.88-5.17-4.39-5.17-2.02 0-2.93 1.13-3.44 1.92V8.5H9.41c.04.83 0 11.5 0 11.5h3.38v-6.42c0-.34.02-.69.12-.93.27-.69.87-1.4 1.9-1.4 1.34 0 1.88 1.04 1.88 2.56V20h3.38v-6.99Z" />
+        </svg>
+      );
+    case "x":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+          <path d="M18.9 2H22l-6.78 7.75L23.2 22h-6.27l-4.9-7.4L5.56 22H2.44l7.25-8.29L1.98 2h6.43l4.42 6.76L18.9 2Zm-1.1 18h1.74L7.46 3.9H5.59L17.8 20Z" />
+        </svg>
+      );
+    case "music":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+          <path d="M8.8 15.8c-1.95 0-3.4 1.07-3.4 2.55C5.4 19.89 6.85 21 8.8 21s3.4-1.11 3.4-2.65V7.55l6.3-1.7v8.05c-.54-.3-1.2-.45-1.95-.45-1.95 0-3.4 1.07-3.4 2.55 0 1.54 1.45 2.65 3.4 2.65 1.96 0 3.45-1.11 3.45-2.65V3.2L10.2 5.8v10c-.42-.02-.85 0-1.4 0Z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("en-US", { notation: "compact" }).format(value);
@@ -119,12 +152,12 @@ export default async function Home() {
                   key={link.label}
                   href={link.href}
                   aria-label={link.label}
+                  title={link.label}
                   className="flex min-w-0 min-h-[2.75rem] items-center justify-center rounded-sm border border-[color:var(--border2)] px-1 py-2 text-center leading-tight break-words hover:border-[color:var(--border)] [@media(min-width:375px)]:px-1.5 sm:px-2.5 md:px-3"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <span className="sm:hidden">{link.mobileLabel ?? link.label}</span>
-                  <span className="hidden sm:inline">{link.label}</span>
+                  <HeaderIcon icon={link.icon} />
                 </a>
               ))}
             </div>
