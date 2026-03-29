@@ -14,6 +14,7 @@ const links = [
   { label: "GitHub", href: "https://github.com/shokace/" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/pjuric/" },
   { label: "X / Twitter", href: "https://x.com/Ezkie_Music" },
+  { label: "Music", href: "https://linktr.ee/ezkie" },
 ];
 
 function formatCompactNumber(value: number) {
@@ -112,12 +113,12 @@ export default async function Home() {
                 Software Engineer
               </p>
             </div>
-            <div className="grid w-full min-w-0 grid-cols-3 gap-2 text-[0.62rem] uppercase tracking-[0.12em] text-faint sm:text-[0.7rem] sm:tracking-[0.2em] md:w-auto md:gap-3">
+            <div className="grid w-full min-w-0 grid-cols-4 gap-1.5 text-[0.52rem] uppercase tracking-[0.06em] text-faint sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
               {links.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className="rounded-sm border border-[color:var(--border2)] px-2 py-2 text-center whitespace-nowrap hover:border-[color:var(--border)] sm:px-3"
+                  className="flex min-h-[2.75rem] items-center justify-center rounded-sm border border-[color:var(--border2)] px-1.5 py-2 text-center leading-tight hover:border-[color:var(--border)] sm:px-2.5 md:px-3"
                   target="_blank"
                   rel="noreferrer"
                 >
