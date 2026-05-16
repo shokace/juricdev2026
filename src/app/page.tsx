@@ -170,7 +170,7 @@ export default async function Home() {
                 Software Engineer
               </p>
             </div>
-            <div className="grid w-full min-w-0 grid-cols-4 gap-1 text-[0.48rem] uppercase tracking-[0.04em] text-faint [@media(min-width:375px)]:gap-1.5 [@media(min-width:375px)]:text-[0.52rem] [@media(min-width:375px)]:tracking-[0.06em] sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
+            <div className="grid w-full min-w-0 grid-cols-5 gap-1 text-[0.48rem] uppercase tracking-[0.04em] text-faint [@media(min-width:375px)]:gap-1.5 [@media(min-width:375px)]:text-[0.52rem] [@media(min-width:375px)]:tracking-[0.06em] sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
               {links.map((link) => (
                 <a
                   key={link.label}
