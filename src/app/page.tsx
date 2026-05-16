@@ -11,6 +11,7 @@ import {
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
 const links = [
+  { label: "Sefaly", href: "https://www.sefaly.com", icon: "globe" },
   { label: "GitHub", href: "https://github.com/shokace/", icon: "github" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/pjuric/", icon: "linkedin" },
   { label: "X / Twitter", href: "https://x.com/Ezkie_Music", icon: "x" },
@@ -21,6 +22,29 @@ function HeaderIcon({ icon }: { icon: (typeof links)[number]["icon"] }) {
   const className = "h-5 w-5 text-[color:var(--text0)] sm:h-5.5 sm:w-5.5";
 
   switch (icon) {
+    case "globe":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
+          <circle
+            cx="12"
+            cy="12"
+            r="8.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          />
+          <path
+            d="M12 3.5c-2.3 2.2-3.6 5.2-3.6 8.5s1.3 6.3 3.6 8.5c2.3-2.2 3.6-5.2 3.6-8.5S14.3 5.7 12 3.5Z"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          />
+          <path
+            d="M4.4 9.25h15.2M4.4 14.75h15.2"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
     case "github":
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
