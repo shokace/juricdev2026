@@ -194,7 +194,7 @@ export default async function Home() {
               <div className="space-y-4 text-[0.75rem] uppercase tracking-[0.2em] text-muted">
                 <div className="flex items-center justify-between">
                   <span>Location</span>
-                  <span className="text-[color:var(--text0)]">USA / EU</span>
+                  <span className="text-[color:var(--text0)]">USA</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Availability</span>
@@ -202,7 +202,7 @@ export default async function Home() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Current Field</span>
-                  <span className="text-[color:var(--text0)]">Telecom</span>
+                  <span className="whitespace-nowrap text-[color:var(--text0)]">AI / Big Data</span>
                 </div>
               </div>
             </Panel>

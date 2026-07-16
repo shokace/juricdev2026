@@ -352,9 +352,11 @@ export default function Globe3D() {
   }, []);
 
   return (
-    <div className="mx-auto h-[clamp(16rem,78vw,22rem)] w-[clamp(16rem,78vw,22rem)] max-w-full overflow-visible">
+    <div className="mx-auto aspect-square w-[clamp(16rem,78vw,22rem)] max-w-full overflow-visible">
+      {/* Camera distance must satisfy d * sin(fov/2) >= outermost trail envelope
+          ((ISS_RADIUS + marker/tube extent) * group scale), or the trail clips at the limbs. */}
       <Canvas
-        camera={{ position: [0, 0, 3.5], fov: 34 }}
+        camera={{ position: [0, 0, 3.75], fov: 34 }}
         gl={{ alpha: true, antialias: true }}
         style={{ width: "100%", height: "100%" }}
       >

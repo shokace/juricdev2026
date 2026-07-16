@@ -9,7 +9,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Petar Juric | Software Engineer",
-  description: "Tactical HUD-inspired fintech resume landing page.",
+  description: "Tactical HUD-inspired resume landing page.",
 };
 
 export default function RootLayout({
