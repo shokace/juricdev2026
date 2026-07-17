@@ -20,7 +20,9 @@ type IssPoint = {
 const ISS_RADIUS = 1.18;
 const ISS_TRAIL_MAX_POINTS = 2400;
 const ISS_TRAIL_SEGMENT_GAP_MS = 8 * 60 * 1000;
-const ISS_TRAIL_MAX_ANGULAR_DISTANCE = Math.PI;
+// The edge clip plane (below) can never show more than ~80 degrees of trail
+// behind the ISS, so building geometry past ~92 degrees is wasted work.
+const ISS_TRAIL_MAX_ANGULAR_DISTANCE = 1.6;
 
 function normalizeTrail(trail: unknown): IssPoint[] {
   if (!Array.isArray(trail)) {
@@ -183,6 +185,16 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
   const issPositions = useMemo(() => issPoints.map(toIssVector), [issPoints]);
   const visibleTrailPoints = useMemo(() => getVisibleTrailPoints(issPoints), [issPoints]);
 
+  // The camera is fixed on +z and the globe rotates instead, so a fixed
+  // world-space plane can end the trail right where it meets the globe's
+  // visible edge: with the camera at z=3.75, the trail at world radius
+  // 1.18*0.88 and the globe edge at ~0.93, the trail's projection leaves the
+  // globe's outline once its world z drops below ~0.68.
+  const trailClippingPlanes = useMemo(
+    () => [new THREE.Plane(new THREE.Vector3(0, 0, 1), -0.68)],
+    []
+  );
+
   useFrame((_state, delta) => {
     if (groupRef.current && issPositions.length) {
       const target = issPositions[issPositions.length - 1].clone().normalize();
@@ -319,12 +331,20 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
         <>
           {trailGeometries.map((geometry, index) => (
             <mesh key={`trail-${index}`} geometry={geometry}>
-              <meshBasicMaterial color="rgba(80,160,255,0.75)" transparent opacity={0.8} />
+              <meshBasicMaterial
+                color="rgba(80,160,255,0.75)"
+                transparent
+                opacity={0.8}
+                clippingPlanes={trailClippingPlanes}
+              />
             </mesh>
           ))}
           <mesh ref={issRef} position={issPositions[issPositions.length - 1]}>
             <sphereGeometry args={[0.02, 16, 16]} />
-            <meshBasicMaterial color="rgba(80,160,255,0.9)" />
+            <meshBasicMaterial
+              color="rgba(80,160,255,0.9)"
+              clippingPlanes={trailClippingPlanes}
+            />
           </mesh>
         </>
       ) : null}
@@ -359,7 +379,7 @@ export default function Globe3D() {
           ((ISS_RADIUS + marker/tube extent) * group scale), or the trail clips at the limbs. */}
       <Canvas
         camera={{ position: [0, 0, 3.75], fov: 34 }}
-        gl={{ alpha: true, antialias: true }}
+        gl={{ alpha: true, antialias: true, localClippingEnabled: true }}
         style={{ width: "100%", height: "100%" }}
       >
         <ambientLight intensity={0.6} />
