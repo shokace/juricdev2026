@@ -27,9 +27,19 @@ type IssRouteResponse = IssResponse & {
   trail: IssTrailPoint[];
 };
 
+type CachedIssNow = {
+  payload: IssResponse;
+  fetchedAt: number;
+};
+
 declare global {
   var __issKvWriteBlockedUntil: number | undefined;
+  var __issNowCache: CachedIssNow | undefined;
 }
+
+const ISS_FETCH_TIMEOUT_MS = 4000;
+const ISS_NOW_FRESH_MS = 4000;
+const ISS_NOW_STALE_LIMIT_MS = 60 * 1000;
 
 function getNextUtcMidnightMs(now: number): number {
   const date = new Date(now);
@@ -70,20 +80,43 @@ function normalizeTrail(input: unknown): IssTrailPoint[] {
 }
 
 async function fetchIssNow(): Promise<IssResponse> {
-  const response = await fetch("http://api.open-notify.org/iss-now.json", {
-    cache: "no-store",
-  });
+  const cached = globalThis.__issNowCache;
+  const now = Date.now();
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch ISS position.");
+  // Coalesce polls from concurrent visitors into one upstream request.
+  if (cached && now - cached.fetchedAt < ISS_NOW_FRESH_MS) {
+    return cached.payload;
   }
 
-  const payload = (await response.json()) as IssResponse;
-  if (payload.message !== "success") {
-    throw new Error("ISS API returned an error.");
-  }
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), ISS_FETCH_TIMEOUT_MS);
+    const response = await fetch("http://api.open-notify.org/iss-now.json", {
+      cache: "no-store",
+      signal: controller.signal,
+    }).finally(() => {
+      clearTimeout(timeout);
+    });
 
-  return payload;
+    if (!response.ok) {
+      throw new Error("Failed to fetch ISS position.");
+    }
+
+    const payload = (await response.json()) as IssResponse;
+    if (payload.message !== "success") {
+      throw new Error("ISS API returned an error.");
+    }
+
+    globalThis.__issNowCache = { payload, fetchedAt: now };
+    return payload;
+  } catch (error) {
+    // open-notify is flaky (observed 0.03s-11s); serve the last known
+    // position for up to a minute instead of erroring the telemetry.
+    if (cached && now - cached.fetchedAt < ISS_NOW_STALE_LIMIT_MS) {
+      return cached.payload;
+    }
+    throw error;
+  }
 }
 
 type KvConfig = {
@@ -209,9 +242,13 @@ async function getSnapshot(): Promise<IssRouteResponse> {
   return { ...payload, trail };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const includeTrail = new URL(request.url).searchParams.get("trail") !== "0";
+
   try {
-    const snapshot = await getSnapshot();
+    // Position-only mode skips the KV round trip and the ~120 KB trail
+    // payload; clients poll this frequently and fetch the trail rarely.
+    const snapshot = includeTrail ? await getSnapshot() : await fetchIssNow();
     return NextResponse.json(snapshot, {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",

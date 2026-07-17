@@ -3,6 +3,7 @@
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { subscribeIss } from "@/lib/iss-feed";
 
 type GlobeMeshProps = {
   size?: number;
@@ -303,52 +304,20 @@ export default function Globe3D() {
   const [issTarget, setIssTarget] = useState<THREE.Vector3 | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchIss = async () => {
-      try {
-        const response = await fetch("/api/iss", { cache: "no-store" });
-        if (!response.ok) {
-          return;
-        }
-        const payload = await response.json();
-        const lat = Number(payload?.iss_position?.latitude);
-        const lon = Number(payload?.iss_position?.longitude);
-        if (Number.isNaN(lat) || Number.isNaN(lon)) {
-          return;
-        }
-        const serverTrail = normalizeTrail(payload?.trail);
-        const timestampSeconds = Number(payload?.timestamp);
-        const pointTimestamp = Number.isFinite(timestampSeconds)
-          ? timestampSeconds * 1000
-          : Date.now();
-
-        const radius = ISS_RADIUS;
-        const phi = (90 - lat) * (Math.PI / 180);
-        const theta = (lon + 180) * (Math.PI / 180);
-        const x = -radius * Math.sin(phi) * Math.cos(theta);
-        const z = radius * Math.sin(phi) * Math.sin(theta);
-        const y = radius * Math.cos(phi);
-        const targetVector = new THREE.Vector3(x, y, z);
-        if (!isMounted) {
-          return;
-        }
-        setIssPoints((prev) => {
-          const livePoint: IssPoint = { lat, lon, ts: pointTimestamp };
-          return mergeTrails([prev, serverTrail, [livePoint]]);
-        });
-        setIssTarget(targetVector);
-      } catch {
-        // Ignore transient errors.
+    return subscribeIss((snapshot) => {
+      const lat = Number(snapshot.latitude);
+      const lon = Number(snapshot.longitude);
+      if (!snapshot.ok || Number.isNaN(lat) || Number.isNaN(lon)) {
+        return;
       }
-    };
-
-    fetchIss();
-    const interval = setInterval(fetchIss, 5000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+      const serverTrail = normalizeTrail(snapshot.trail);
+      const pointTimestamp = snapshot.timestamp
+        ? snapshot.timestamp * 1000
+        : Date.now();
+      const livePoint: IssPoint = { lat, lon, ts: pointTimestamp };
+      setIssPoints((prev) => mergeTrails([prev, serverTrail, [livePoint]]));
+      setIssTarget(toIssVector(livePoint));
+    });
   }, []);
 
   return (

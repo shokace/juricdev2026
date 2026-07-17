@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type IssPayload = {
-  message: string;
-  timestamp: number;
-  iss_position: {
-    latitude: string;
-    longitude: string;
-  };
-};
+import { subscribeIss } from "@/lib/iss-feed";
 
 type IssState = {
   latitude: string;
@@ -25,38 +17,13 @@ export default function IssTelemetry() {
   });
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchIss = async () => {
-      try {
-        const response = await fetch("/api/iss", { cache: "no-store" });
-        if (!response.ok) {
-          if (isMounted) {
-            setState((prev) => ({ ...prev, status: "UNSTABLE" }));
-          }
-          return;
-        }
-        const payload = (await response.json()) as IssPayload;
-        if (isMounted) {
-          setState({
-            latitude: payload?.iss_position?.latitude ?? "--",
-            longitude: payload?.iss_position?.longitude ?? "--",
-            status: payload?.message === "success" ? "STABLE" : "UNSTABLE",
-          });
-        }
-      } catch {
-        if (isMounted) {
-          setState((prev) => ({ ...prev, status: "UNSTABLE" }));
-        }
-      }
-    };
-
-    fetchIss();
-    const interval = setInterval(fetchIss, 5000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+    return subscribeIss((snapshot) => {
+      setState({
+        latitude: snapshot.latitude,
+        longitude: snapshot.longitude,
+        status: snapshot.ok ? "STABLE" : "UNSTABLE",
+      });
+    });
   }, []);
 
   return (
