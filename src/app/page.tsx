@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
@@ -116,6 +117,87 @@ async function getGithubGrid(user: string, year: number): Promise<GithubContribu
   }
 }
 
+function NeverLandingRows({ stats }: { stats: NeverLandingStats | null }) {
+  return (
+    <div className="space-y-3 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
+      <div className="flex items-center justify-between">
+        <span>Unique Visitors</span>
+        <span className="text-[color:var(--text0)]">
+          {stats ? formatCompactNumber(stats.uniqueVisitors) : "--"}
+        </span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Requests</span>
+        <span className="text-[color:var(--text0)]">
+          {stats ? formatCompactNumber(stats.requests) : "--"}
+        </span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Edge Data</span>
+        <span className="text-[color:var(--text0)]">
+          {stats ? formatGigabytes(stats.edgeResponseBytes) : "--"}
+        </span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Window</span>
+        <span className="text-[color:var(--text0)]">
+          {stats ? formatWindowHours(stats.windowHours) : "--"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+async function NeverLandingLive() {
+  const stats = await getNeverLandingStats();
+  return <NeverLandingRows stats={stats} />;
+}
+
+function GithubGridView({ grid }: { grid: GithubContributionGrid }) {
+  const cellMap = new Map(grid.cells.map((cell) => [`${cell.col}-${cell.row}`, cell.level]));
+  const levelColors = [
+    "rgba(255, 255, 255, 0.04)",
+    "rgba(53, 242, 139, 0.2)",
+    "rgba(53, 242, 139, 0.38)",
+    "rgba(53, 242, 139, 0.58)",
+    "rgba(53, 242, 139, 0.78)",
+  ];
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-sm border border-[color:var(--border2)] bg-black/30 p-3">
+      <div
+        className="gh-grid grid gap-[3px]"
+        style={{
+          gridTemplateColumns: `repeat(${grid.maxCol - grid.minCol + 1}, minmax(0, 1fr))`,
+        }}
+      >
+        {Array.from({ length: 7 }, (_, row) =>
+          Array.from({ length: grid.maxCol - grid.minCol + 1 }, (_, colIndex) => {
+            const col = colIndex + grid.minCol;
+            const level = Math.min(cellMap.get(`${col}-${row}`) ?? 0, 4);
+            return (
+              <span
+                key={`${col}-${row}`}
+                className={`gh-cell gh-level-${level}`}
+                style={{
+                  display: "block",
+                  backgroundColor: levelColors[level],
+                  border: "1px solid rgba(255, 255, 255, 0.04)",
+                }}
+              />
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+async function GithubGridLive({ user, year }: { user: string; year: number }) {
+  const grid = await getGithubGrid(user, year);
+  return <GithubGridView grid={grid} />;
+}
+
 function Panel({
   title,
   children,
@@ -141,22 +223,8 @@ function Panel({
 export const dynamic = "force-dynamic";
 export const runtime = "edge";
 
-export default async function Home() {
+export default function Home() {
   const currentYear = new Date().getFullYear();
-  const [neverLandingStats, githubGrid] = await Promise.all([
-    getNeverLandingStats(),
-    getGithubGrid("shokace", currentYear),
-  ]);
-  const githubCellMap = new Map(
-    githubGrid.cells.map((cell) => [`${cell.col}-${cell.row}`, cell.level])
-  );
-  const githubLevelColors = [
-    "rgba(255, 255, 255, 0.04)",
-    "rgba(53, 242, 139, 0.2)",
-    "rgba(53, 242, 139, 0.38)",
-    "rgba(53, 242, 139, 0.58)",
-    "rgba(53, 242, 139, 0.78)",
-  ];
 
   return (
     <div className="hud-grid hud-noise min-h-screen">
@@ -226,38 +294,9 @@ export default async function Home() {
                 </a>
               }
             >
-              <div className="space-y-3 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
-                <div className="flex items-center justify-between">
-                  <span>Unique Visitors</span>
-                  <span className="text-[color:var(--text0)]">
-                    {neverLandingStats
-                      ? formatCompactNumber(neverLandingStats.uniqueVisitors)
-                      : "--"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Requests</span>
-                  <span className="text-[color:var(--text0)]">
-                    {neverLandingStats
-                      ? formatCompactNumber(neverLandingStats.requests)
-                      : "--"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Edge Data</span>
-                  <span className="text-[color:var(--text0)]">
-                    {neverLandingStats
-                      ? formatGigabytes(neverLandingStats.edgeResponseBytes)
-                      : "--"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Window</span>
-                  <span className="text-[color:var(--text0)]">
-                    {neverLandingStats ? formatWindowHours(neverLandingStats.windowHours) : "--"}
-                  </span>
-                </div>
-              </div>
+              <Suspense fallback={<NeverLandingRows stats={null} />}>
+                <NeverLandingLive />
+              </Suspense>
             </Panel>
           </div>
 
@@ -308,38 +347,9 @@ export default async function Home() {
 
         <div className="mt-6">
           <Panel title={`GitHub Activity ${currentYear}`}>
-            <div className="mt-4 overflow-hidden rounded-sm border border-[color:var(--border2)] bg-black/30 p-3">
-              <div
-                className="gh-grid grid gap-[3px]"
-                style={{
-                  gridTemplateColumns: `repeat(${githubGrid.maxCol - githubGrid.minCol + 1}, minmax(0, 1fr))`,
-                }}
-              >
-                {Array.from({ length: 7 }, (_, row) =>
-                  Array.from(
-                    { length: githubGrid.maxCol - githubGrid.minCol + 1 },
-                    (_, colIndex) => {
-                      const col = colIndex + githubGrid.minCol;
-                      const level = Math.min(
-                        githubCellMap.get(`${col}-${row}`) ?? 0,
-                        4
-                      );
-                      return (
-                        <span
-                          key={`${col}-${row}`}
-                          className={`gh-cell gh-level-${level}`}
-                          style={{
-                            display: "block",
-                            backgroundColor: githubLevelColors[level],
-                            border: "1px solid rgba(255, 255, 255, 0.04)",
-                          }}
-                        />
-                      );
-                    }
-                  )
-                )}
-              </div>
-            </div>
+            <Suspense fallback={<GithubGridView grid={getEmptyGithubGrid("shokace", currentYear)} />}>
+              <GithubGridLive user="shokace" year={currentYear} />
+            </Suspense>
           </Panel>
         </div>
       </main>

@@ -39,7 +39,10 @@ export async function fetchNeverLandingStats(): Promise<NeverLandingStats> {
     throw new Error("Missing Cloudflare credentials.");
   }
 
-  const end = new Date();
+  // Round the window to the hour so the request body (part of the fetch
+  // cache key) stays stable and revalidate can actually serve cache hits.
+  const hourMs = 60 * 60 * 1000;
+  const end = new Date(Math.floor(Date.now() / hourMs) * hourMs);
   const days = 7;
   const dayMs = 24 * 60 * 60 * 1000;
 
@@ -77,6 +80,7 @@ export async function fetchNeverLandingStats(): Promise<NeverLandingStats> {
           end: end.toISOString(),
         },
       }),
+      next: { revalidate: 600 },
     });
 
     if (!response.ok) {
