@@ -159,6 +159,27 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
   earthTexture.minFilter = THREE.LinearMipmapLinearFilter;
   earthTexture.magFilter = THREE.LinearFilter;
 
+  // The watermask is land=black / water=white; invert it once on a canvas so
+  // it can drive the raised land layer's alpha (land opaque, water clear).
+  const landTexture = useMemo(() => {
+    const image = earthTexture.image as HTMLImageElement;
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return null;
+    }
+    context.filter = "invert(1)";
+    context.drawImage(image, 0, 0);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.NoColorSpace;
+    texture.anisotropy = 8;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    return texture;
+  }, [earthTexture]);
+
   const issPositions = useMemo(() => issPoints.map(toIssVector), [issPoints]);
   const visibleTrailPoints = useMemo(() => getVisibleTrailPoints(issPoints), [issPoints]);
 
@@ -251,18 +272,30 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
         <sphereGeometry args={[size, 64, 48]} />
         <meshBasicMaterial
           map={earthTexture}
-          color="rgba(95,95,95,0.7)"
+          color="rgba(55,55,55,0.7)"
           transparent
-          opacity={0.42}
+          opacity={0.32}
         />
       </mesh>
+      {landTexture ? (
+        <mesh>
+          <sphereGeometry args={[size * 1.012, 64, 48]} />
+          <meshBasicMaterial
+            color="rgba(205,224,212,1)"
+            alphaMap={landTexture}
+            transparent
+            opacity={0.72}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
       <mesh>
         <sphereGeometry args={[size, 64, 48]} />
         <meshBasicMaterial
           color="rgba(255,255,255,0.2)"
           wireframe
           transparent
-          opacity={0.45}
+          opacity={0.4}
         />
       </mesh>
       <mesh>
@@ -271,7 +304,7 @@ function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
           color="rgba(227,58,58,0.16)"
           wireframe
           transparent
-          opacity={0.2}
+          opacity={0.1}
         />
       </mesh>
       <mesh>
