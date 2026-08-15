@@ -12,7 +12,7 @@ import {
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
 const links = [
-  { label: "Sefaly", href: "https://www.sefaly.com", icon: "globe" },
+  { label: "Sefaly", href: "https://www.sefaly.com", icon: "folder" },
   { label: "GitHub", href: "https://github.com/shokace/", icon: "github" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/pjuric/", icon: "linkedin" },
   { label: "X / Twitter", href: "https://x.com/Ezkie_Music", icon: "x" },
@@ -23,23 +23,17 @@ function HeaderIcon({ icon }: { icon: (typeof links)[number]["icon"] }) {
   const className = "h-5 w-5 text-[color:var(--text0)] sm:h-5.5 sm:w-5.5";
 
   switch (icon) {
-    case "globe":
+    case "folder":
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
-          <circle
-            cx="12"
-            cy="12"
-            r="8.5"
+          <path
+            d="M3.25 6.75c0-.83.67-1.5 1.5-1.5h4.09c.5 0 .97.25 1.25.66l1.06 1.59h8.1c.83 0 1.5.67 1.5 1.5v8.75c0 .83-.67 1.5-1.5 1.5H4.75c-.83 0-1.5-.67-1.5-1.5V6.75Z"
             stroke="currentColor"
             strokeWidth="1.6"
+            strokeLinejoin="round"
           />
           <path
-            d="M12 3.5c-2.3 2.2-3.6 5.2-3.6 8.5s1.3 6.3 3.6 8.5c2.3-2.2 3.6-5.2 3.6-8.5S14.3 5.7 12 3.5Z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-          />
-          <path
-            d="M4.4 9.25h15.2M4.4 14.75h15.2"
+            d="M3.25 10.5h17.5"
             stroke="currentColor"
             strokeWidth="1.6"
             strokeLinecap="round"
