@@ -12,7 +12,7 @@ import {
 import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
 
 const links = [
-  { label: "Sefaly", href: "https://www.sefaly.com", icon: "folder" },
+  { label: "Sefaly", href: "https://www.sefaly.com", icon: "sefaly" },
   { label: "GitHub", href: "https://github.com/shokace/", icon: "github" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/pjuric/", icon: "linkedin" },
   { label: "X / Twitter", href: "https://x.com/Ezkie_Music", icon: "x" },
@@ -23,21 +23,21 @@ function HeaderIcon({ icon }: { icon: (typeof links)[number]["icon"] }) {
   const className = "h-5 w-5 text-[color:var(--text0)] sm:h-5.5 sm:w-5.5";
 
   switch (icon) {
-    case "folder":
+    case "sefaly":
       return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="none">
-          <path
-            d="M3.25 6.75c0-.83.67-1.5 1.5-1.5h4.09c.5 0 .97.25 1.25.66l1.06 1.59h8.1c.83 0 1.5.67 1.5 1.5v8.75c0 .83-.67 1.5-1.5 1.5H4.75c-.83 0-1.5-.67-1.5-1.5V6.75Z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M3.25 10.5h17.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className={className}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 2 4 7v10l8 5 8-5V7l-8-5Z" />
+          <path d="M12 22V12" />
+          <path d="m20 7-8 5-8-5" />
         </svg>
       );
     case "github":
@@ -232,20 +232,25 @@ export default function Home() {
                 Software Engineer
               </p>
             </div>
-            <div className="grid w-full min-w-0 grid-cols-5 gap-1 text-[0.48rem] uppercase tracking-[0.04em] text-faint [@media(min-width:375px)]:gap-1.5 [@media(min-width:375px)]:text-[0.52rem] [@media(min-width:375px)]:tracking-[0.06em] sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
-              {links.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  aria-label={link.label}
-                  title={link.label}
-                  className="flex min-w-0 min-h-[2.75rem] items-center justify-center rounded-sm border border-[color:var(--border2)] px-1 py-2 text-center leading-tight break-words hover:border-[color:var(--border)] [@media(min-width:375px)]:px-1.5 sm:px-2.5 md:px-3"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <HeaderIcon icon={link.icon} />
-                </a>
-              ))}
+            <div className="w-full min-w-0 md:w-auto">
+              <div className="text-[0.7rem] uppercase tracking-[0.3em] text-faint md:text-right">
+                Projects &amp; Links
+              </div>
+              <div className="mt-3 grid w-full min-w-0 grid-cols-5 gap-1 text-[0.48rem] uppercase tracking-[0.04em] text-faint [@media(min-width:375px)]:gap-1.5 [@media(min-width:375px)]:text-[0.52rem] [@media(min-width:375px)]:tracking-[0.06em] sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
+                {links.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    aria-label={link.label}
+                    title={link.label}
+                    className="flex min-w-0 min-h-[2.75rem] items-center justify-center rounded-sm border border-[color:var(--border2)] px-1 py-2 text-center leading-tight break-words hover:border-[color:var(--border)] [@media(min-width:375px)]:px-1.5 sm:px-2.5 md:px-3"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <HeaderIcon icon={link.icon} />
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </Panel>
