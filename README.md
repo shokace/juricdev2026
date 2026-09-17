@@ -116,3 +116,16 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## ISS view and interaction
+
+The globe follows the latest reported position by default. **Explore globe** enables
+mouse/touch rotation; **Follow ISS** restores tracking. Normal page scrolling remains
+available over the globe in follow mode. The path is recorded history (up to 90
+minutes); gaps over eight minutes are not joined.
+
+Rendering pauses outside the viewport and in hidden tabs. Reduced-motion mode uses
+on-demand rendering and removes pulsing/interpolated transitions. Live coordinates
+remain available when WebGL is unavailable. The feed times out after eight seconds,
+retains the last known position on failure, and marks readings over 45 seconds old
+as reconnecting. Run `npm run test:iss` for coordinate, freshness, and trail checks.

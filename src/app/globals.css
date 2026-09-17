@@ -44,7 +44,7 @@ button { font: inherit; }
 .project-link:hover, .project-link:focus-visible { color: var(--accent-green); border-color: var(--accent-green); }
 .project-link:hover .link-arrow { transform: translate(2px, -2px); color: var(--accent-green); }
 .project-link:active { transform: translateY(1px); }
-.about-copy { font: 400 17px/1.65 var(--font-plex-sans), sans-serif; color: var(--text1); letter-spacing: -.01em; max-width: 40ch; }
+.about-copy { font: 400 16px/1.65 var(--font-plex-sans), sans-serif; color: var(--text1); letter-spacing: -.01em; max-width: 40ch; }
 .detail-panel .text-muted > div { gap: 10px; }
 .detail-panel .text-muted > div > span:first-child { color: var(--text2); }
 .activity-link { display: block; padding: 0 0 12px; border-bottom: 1px solid var(--border2); transition: color 180ms ease; }
@@ -97,3 +97,31 @@ button { font: inherit; }
  [data-dashboard-column="activity"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
  .detail-panel .text-muted > div { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
+
+/* The tracker is a quiet focal point, with controls outside the touch canvas. */
+.tracker-panel { background: #0d161c; }
+.iss-globe { width: 100%; max-width: 490px; }
+.globe-stage { width: 100%; aspect-ratio: 1; position: relative; touch-action: pan-y; }
+.globe-stage canvas { outline: none; }
+.globe-fallback { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 12px; line-height: 1.8; color: var(--text2); }
+.globe-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.orbit-legend { display: inline-flex; align-items: center; gap: 8px; color: var(--text2); font-size: 10px; }
+.orbit-legend i { width: 18px; height: 2px; background: #9fceeb; position: relative; }
+.orbit-legend i::after { content: ""; position: absolute; right: 0; top: -2px; width: 6px; height: 6px; border-radius: 50%; background: #ecf9ff; }
+.globe-control { min-height: 40px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 3px; font-size: 11px; color: var(--text1); cursor: pointer; transition: background 180ms, color 180ms; }
+.globe-control:hover, .globe-control[aria-pressed="true"] { color: #bcdced; background: #192e38; border-color: #385766; }
+.globe-control:active { transform: translateY(1px); }
+.globe-hint { margin: 8px 0 20px; color: var(--text2); font-size: 10px; text-align: right; }
+.iss-telemetry { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px; border-top: 1px solid var(--border); padding-top: 18px; }
+.telemetry-label { display: block; color: var(--text2); font-size: 10px; margin-bottom: 8px; }
+.telemetry-value { display: block; color: var(--text0); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.signal-state { display: flex; align-items: center; gap: 7px; font-size: 11px; }
+.signal-state i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.is-live { color: var(--accent-green); }
+.is-waiting { color: #d4b381; }
+.telemetry-time { grid-column: 1 / -1; margin: 4px 0 0; color: var(--text2); font-size: 9px; }
+@media (max-width: 420px) { .globe-control { min-height: 44px; } .telemetry-value { font-size: 12px; } .signal-state { font-size: 10px; gap: 4px; } .iss-telemetry { gap: 8px; } }
+
+.about-copy + .about-copy { margin-top: 14px; }
+.about-copy a { color: var(--text0); text-decoration: underline; text-decoration-color: #43564d; text-underline-offset: 4px; transition: text-decoration-color 160ms; }
+.about-copy a:hover { text-decoration-color: var(--accent-green); }

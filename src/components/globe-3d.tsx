@@ -1,390 +1,168 @@
 "use client";
 
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
+import { Component, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { subscribeIss } from "@/lib/iss-feed";
+import { mergeIssTrail, normalizeIssTrail } from "@/lib/iss-data.mjs";
 
-type GlobeMeshProps = {
-  size?: number;
-  issPoints: IssPoint[];
-  issTarget: THREE.Vector3 | null;
-};
+type Point = { lat: number; lon: number; ts: number };
+const ORBIT_RADIUS = 1.07;
+const CAMERA_DISTANCE = 3.85;
+const MARKER_START: [number, number, number] = [0, 0, ORBIT_RADIUS];
+const UP = new THREE.Vector3(0, 1, 0);
 
-type IssPoint = {
-  lat: number;
-  lon: number;
-  ts: number;
-};
-
-const ISS_RADIUS = 1.18;
-const ISS_TRAIL_MAX_POINTS = 2400;
-const ISS_TRAIL_SEGMENT_GAP_MS = 8 * 60 * 1000;
-// The edge clip plane (below) can never show more than ~80 degrees of trail
-// behind the ISS, so building geometry past ~92 degrees is wasted work.
-const ISS_TRAIL_MAX_ANGULAR_DISTANCE = 1.6;
-
-function normalizeTrail(trail: unknown): IssPoint[] {
-  if (!Array.isArray(trail)) {
-    return [];
-  }
-
-  return trail
-    .filter(
-      (point): point is IssPoint =>
-        typeof point === "object" &&
-        point !== null &&
-        typeof (point as IssPoint).lat === "number" &&
-        typeof (point as IssPoint).lon === "number" &&
-        typeof (point as IssPoint).ts === "number"
-    )
-    .sort((a, b) => a.ts - b.ts);
+function position(lat: number, lon: number, radius = 1) {
+  const phi = THREE.MathUtils.degToRad(90 - lat), theta = THREE.MathUtils.degToRad(lon + 180);
+  return new THREE.Vector3(-radius * Math.sin(phi) * Math.cos(theta), radius * Math.cos(phi), radius * Math.sin(phi) * Math.sin(theta));
 }
 
-function buildTrailKey(point: IssPoint): string {
-  return `${point.ts}:${point.lat.toFixed(4)}:${point.lon.toFixed(4)}`;
+function graticule() {
+  const vertices: number[] = [];
+  const segment = (a: THREE.Vector3, b: THREE.Vector3) => { vertices.push(...a.toArray(), ...b.toArray()); };
+  for (let lat = -60; lat <= 60; lat += 30) for (let lon = -180; lon < 180; lon += 5) segment(position(lat, lon, 1.008), position(lat, lon + 5, 1.008));
+  for (let lon = -180; lon < 180; lon += 30) for (let lat = -90; lat < 90; lat += 5) segment(position(lat, lon, 1.008), position(lat + 5, lon, 1.008));
+  return new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
 }
 
-function mergeTrails(trailGroups: IssPoint[][]): IssPoint[] {
-  const deduped = new Map<string, IssPoint>();
-
-  for (const group of trailGroups) {
-    for (const point of group) {
-      deduped.set(buildTrailKey(point), point);
-    }
+function trailGeometry(points: Point[]) {
+  const newest = points.at(-1)?.ts ?? 0;
+  const recent = points.filter(point => newest - point.ts <= 90 * 60_000);
+  const segments: THREE.Vector3[][] = [];
+  for (let i = 0; i < recent.length; i++) {
+    if (i === 0 || recent[i].ts - recent[i-1].ts > 8 * 60_000) segments.push([]);
+    segments.at(-1)!.push(position(recent[i].lat, recent[i].lon, ORBIT_RADIUS));
   }
-
-  const merged = Array.from(deduped.values()).sort((a, b) => a.ts - b.ts);
-  if (merged.length <= ISS_TRAIL_MAX_POINTS) {
-    return merged;
-  }
-
-  return merged.slice(-ISS_TRAIL_MAX_POINTS);
+  return segments.filter(segment => segment.length > 1).map(segment => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(segment), Math.min(360, Math.max(24, segment.length * 3)), 0.0035, 5, false));
 }
 
-function toUnitVector(point: IssPoint): THREE.Vector3 {
-  return toIssVector(point).normalize();
-}
-
-function getVisibleTrailPoints(points: IssPoint[]): IssPoint[] {
-  if (points.length < 2) {
-    return points;
-  }
-
-  const visible: IssPoint[] = [points[points.length - 1]];
-  let totalAngle = 0;
-
-  for (let index = points.length - 2; index >= 0; index -= 1) {
-    const olderPoint = points[index];
-    const newerPoint = visible[0];
-
-    if (newerPoint.ts - olderPoint.ts > ISS_TRAIL_SEGMENT_GAP_MS) {
-      break;
-    }
-
-    const olderVector = toUnitVector(olderPoint);
-    const newerVector = toUnitVector(newerPoint);
-    const angle = olderVector.angleTo(newerVector);
-
-    if (!Number.isFinite(angle) || angle <= 0) {
-      continue;
-    }
-
-    if (totalAngle + angle > ISS_TRAIL_MAX_ANGULAR_DISTANCE) {
-      break;
-    }
-
-    visible.unshift(olderPoint);
-    totalAngle += angle;
-  }
-
-  return visible;
-}
-
-function toIssVector(point: IssPoint): THREE.Vector3 {
-  const phi = (90 - point.lat) * (Math.PI / 180);
-  const theta = (point.lon + 180) * (Math.PI / 180);
-  const x = -ISS_RADIUS * Math.sin(phi) * Math.cos(theta);
-  const z = ISS_RADIUS * Math.sin(phi) * Math.sin(theta);
-  const y = ISS_RADIUS * Math.cos(phi);
-  return new THREE.Vector3(x, y, z);
-}
-
-function interpolateArc(start: THREE.Vector3, end: THREE.Vector3): THREE.Vector3[] {
-  const a = start.clone().normalize();
-  const b = end.clone().normalize();
-  const angle = a.angleTo(b);
-  if (!Number.isFinite(angle) || angle === 0) {
-    return [start.clone(), end.clone()];
-  }
-
-  const steps = Math.max(2, Math.ceil(angle / (Math.PI / 90)));
-  const axis = new THREE.Vector3().crossVectors(a, b);
-
-  if (axis.lengthSq() < 1e-10) {
-    const fallback: THREE.Vector3[] = [];
-    for (let i = 0; i <= steps; i += 1) {
-      const t = i / steps;
-      fallback.push(a.clone().lerp(b, t).normalize().multiplyScalar(ISS_RADIUS));
-    }
-    return fallback;
-  }
-
-  axis.normalize();
-  const points: THREE.Vector3[] = [];
-  for (let i = 0; i <= steps; i += 1) {
-    const t = i / steps;
-    const q = new THREE.Quaternion().setFromAxisAngle(axis, angle * t);
-    points.push(a.clone().applyQuaternion(q).normalize().multiplyScalar(ISS_RADIUS));
-  }
-  return points;
-}
-
-function buildTrailGeometry(points: THREE.Vector3[]): THREE.TubeGeometry | null {
-  if (points.length < 2) {
-    return null;
-  }
-
-  const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
-  return new THREE.TubeGeometry(curve, Math.max(80, points.length * 2), 0.012, 8, false);
-}
-
-function GlobeMesh({ size = 1, issPoints, issTarget }: GlobeMeshProps) {
-  const groupRef = useRef<THREE.Group>(null);
-  const issRef = useRef<THREE.Mesh>(null);
-  const currentIssRef = useRef<THREE.Vector3>(new THREE.Vector3());
-  const currentQuatRef = useRef<THREE.Quaternion>(new THREE.Quaternion());
-  const targetQuatRef = useRef<THREE.Quaternion>(new THREE.Quaternion());
-  const earthTexture = useLoader(THREE.TextureLoader, "/textures/earth-watermask.png");
-  earthTexture.colorSpace = THREE.NoColorSpace;
-  earthTexture.anisotropy = 8;
-  earthTexture.minFilter = THREE.LinearMipmapLinearFilter;
-  earthTexture.magFilter = THREE.LinearFilter;
-
-  // The watermask is land=black / water=white; invert it once on a canvas so
-  // it can drive the raised land layer's alpha (land opaque, water clear).
-  const landTexture = useMemo(() => {
-    const image = earthTexture.image as HTMLImageElement;
-    const canvas = document.createElement("canvas");
-    canvas.width = image.width;
-    canvas.height = image.height;
+function GlobeMesh({ points, follow, reduced }: { points: Point[]; follow: boolean; reduced: boolean }) {
+  const group = useRef<THREE.Group>(null);
+  const marker = useRef<THREE.Mesh>(null);
+  const sourceTexture = useLoader(THREE.TextureLoader, "/textures/earth-watermask.png");
+  const land = useMemo(() => {
+    const image = sourceTexture.image as HTMLImageElement;
+    const canvas = document.createElement("canvas"); canvas.width = image.width; canvas.height = image.height;
     const context = canvas.getContext("2d");
-    if (!context) {
-      return null;
-    }
-    context.filter = "invert(1)";
-    context.drawImage(image, 0, 0);
+    if (!context) return null;
+    context.filter = "invert(1)"; context.drawImage(image, 0, 0);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.NoColorSpace;
-    texture.anisotropy = 8;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
+    texture.anisotropy = 4;
     return texture;
-  }, [earthTexture]);
-
-  const issPositions = useMemo(() => issPoints.map(toIssVector), [issPoints]);
-  const visibleTrailPoints = useMemo(() => getVisibleTrailPoints(issPoints), [issPoints]);
-
-  // The camera is fixed on +z and the globe rotates instead, so a fixed
-  // world-space plane can end the trail right where it meets the globe's
-  // visible edge: with the camera at z=3.75, the trail at world radius
-  // 1.18*0.88 and the globe edge at ~0.93, the trail's projection leaves the
-  // globe's outline once its world z drops below ~0.68.
-  const trailClippingPlanes = useMemo(
-    () => [new THREE.Plane(new THREE.Vector3(0, 0, 1), -0.68)],
-    []
-  );
-
-  useFrame((_state, delta) => {
-    if (groupRef.current && issPositions.length) {
-      const target = issPositions[issPositions.length - 1].clone().normalize();
-      const forward = new THREE.Vector3(0, 0, 1);
-      const poleProximity = Math.abs(target.y);
-      const poleDampen = THREE.MathUtils.smoothstep(poleProximity, 0.45, 0.9);
-      const dampenedTarget = new THREE.Vector3(
-        target.x,
-        target.y * (1 - poleDampen * 0.8),
-        target.z
-      ).normalize();
-      const blendedTarget = dampenedTarget;
-      const worldUp = new THREE.Vector3(0, 1, 0);
-      const forwardWorld = blendedTarget;
-      const rightWorld = new THREE.Vector3().crossVectors(worldUp, forwardWorld).normalize();
-      const upWorld = new THREE.Vector3().crossVectors(forwardWorld, rightWorld).normalize();
-      const worldBasis = new THREE.Matrix4().makeBasis(rightWorld, upWorld, forwardWorld);
-      const viewBasis = new THREE.Matrix4().makeBasis(
-        new THREE.Vector3(1, 0, 0),
-        new THREE.Vector3(0, 1, 0),
-        new THREE.Vector3(0, 0, 1)
-      );
-      const rotationMatrix = new THREE.Matrix4()
-        .copy(viewBasis)
-        .multiply(worldBasis.clone().invert());
-      targetQuatRef.current.setFromRotationMatrix(rotationMatrix);
-      if (currentQuatRef.current.lengthSq() === 0) {
-        currentQuatRef.current.copy(targetQuatRef.current);
-      } else {
-        currentQuatRef.current.slerp(targetQuatRef.current, 0.04);
-      }
-      groupRef.current.setRotationFromQuaternion(currentQuatRef.current);
-    }
-    if (issRef.current) {
-      if (issTarget) {
-        if (currentIssRef.current.length() === 0) {
-          currentIssRef.current.copy(issTarget);
-        } else {
-          currentIssRef.current.lerp(issTarget, 0.04);
-        }
-        currentIssRef.current.setLength(ISS_RADIUS);
-        issRef.current.position.copy(currentIssRef.current);
-      }
-      const scale = 0.85 + Math.sin(Date.now() * 0.004) * 0.25;
-      issRef.current.scale.set(scale, scale, scale);
+  }, [sourceTexture]);
+  const grid = useMemo(() => graticule(), []);
+  const trails = useMemo(() => trailGeometry(points), [points]);
+  const target = useMemo(() => {
+    const point = points.at(-1);
+    return point ? position(point.lat, point.lon, ORBIT_RADIUS) : null;
+  }, [points]);
+  const rotation = useMemo(() => {
+    if (!target) return new THREE.Quaternion();
+    const forward = target.clone().normalize();
+    const right = new THREE.Vector3().crossVectors(Math.abs(forward.y) > 0.999 ? new THREE.Vector3(0, 0, 1) : UP, forward).normalize();
+    const up = new THREE.Vector3().crossVectors(forward, right).normalize();
+    return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(right, up, forward)).invert();
+  }, [target]);
+  useEffect(() => () => land?.dispose(), [land]);
+  useEffect(() => () => grid.dispose(), [grid]);
+  useEffect(() => () => trails.forEach(geometry => geometry.dispose()), [trails]);
+  useFrame((state, delta) => {
+    const blend = reduced ? 1 : 1 - Math.exp(-Math.min(delta, 0.1) * 3);
+    if (group.current && follow) group.current.quaternion.slerp(rotation, blend);
+    if (marker.current && target) {
+      marker.current.position.lerp(target, blend).setLength(ORBIT_RADIUS);
+      marker.current.scale.setScalar(reduced ? 1 : 1 + Math.sin(state.clock.elapsedTime * 2.6) * 0.13);
     }
   });
-
-  const trailGeometries = useMemo(() => {
-    if (visibleTrailPoints.length < 2) {
-      return [] as THREE.TubeGeometry[];
-    }
-
-    const result: THREE.TubeGeometry[] = [];
-    let currentSegment: THREE.Vector3[] = [toIssVector(visibleTrailPoints[0])];
-
-    for (let i = 1; i < visibleTrailPoints.length; i += 1) {
-      const prevPoint = visibleTrailPoints[i - 1];
-      const nextPoint = visibleTrailPoints[i];
-      const start = toIssVector(prevPoint);
-      const end = toIssVector(nextPoint);
-
-      if (nextPoint.ts - prevPoint.ts > ISS_TRAIL_SEGMENT_GAP_MS) {
-        const geometry = buildTrailGeometry(currentSegment);
-        if (geometry) {
-          result.push(geometry);
-        }
-        currentSegment = [end];
-        continue;
-      }
-
-      const arcPoints = interpolateArc(start, end);
-      currentSegment.push(...arcPoints.slice(1));
-    }
-
-    const geometry = buildTrailGeometry(currentSegment);
-    if (geometry) {
-      result.push(geometry);
-    }
-
-    return result;
-  }, [visibleTrailPoints]);
-
   return (
-    <group ref={groupRef} scale={0.88}>
-      <mesh>
-        <sphereGeometry args={[size, 64, 48]} />
-        <meshBasicMaterial
-          map={earthTexture}
-          color="rgba(55,55,55,0.7)"
-          transparent
-          opacity={0.32}
-        />
-      </mesh>
-      {landTexture ? (
-        <mesh>
-          <sphereGeometry args={[size * 1.012, 64, 48]} />
-          <meshBasicMaterial
-            color="rgba(205,224,212,1)"
-            alphaMap={landTexture}
-            transparent
-            opacity={0.72}
-            depthWrite={false}
-          />
-        </mesh>
-      ) : null}
-      <mesh>
-        <sphereGeometry args={[size, 64, 48]} />
-        <meshBasicMaterial
-          color="rgba(255,255,255,0.2)"
-          wireframe
-          transparent
-          opacity={0.4}
-        />
-      </mesh>
-      <mesh>
-        <sphereGeometry args={[size * 1.02, 64, 48]} />
-        <meshBasicMaterial
-          color="rgba(227,58,58,0.16)"
-          wireframe
-          transparent
-          opacity={0.1}
-        />
-      </mesh>
-      <mesh>
-        <sphereGeometry args={[size * 1.06, 64, 48]} />
-        <meshBasicMaterial
-          color="rgba(120,120,120,0.12)"
-          transparent
-          opacity={0.18}
-        />
-      </mesh>
-      {issPositions.length ? (
-        <>
-          {trailGeometries.map((geometry, index) => (
-            <mesh key={`trail-${index}`} geometry={geometry}>
-              <meshBasicMaterial
-                color="rgba(80,160,255,0.75)"
-                transparent
-                opacity={0.8}
-                clippingPlanes={trailClippingPlanes}
-              />
-            </mesh>
-          ))}
-          <mesh ref={issRef} position={issPositions[issPositions.length - 1]}>
-            <sphereGeometry args={[0.02, 16, 16]} />
-            <meshBasicMaterial
-              color="rgba(80,160,255,0.9)"
-              clippingPlanes={trailClippingPlanes}
-            />
-          </mesh>
-        </>
-      ) : null}
+    <group ref={group}>
+      <mesh><sphereGeometry args={[1, 96, 64]} /><meshPhongMaterial color="#172b35" shininess={12} /></mesh>
+      {land && <mesh><sphereGeometry args={[1.003, 96, 64]} /><meshLambertMaterial color="#91afa0" alphaMap={land} alphaTest={0.45} /></mesh>}
+      <lineSegments geometry={grid}><lineBasicMaterial color="#d2e1df" transparent opacity={0.12} depthWrite={false} /></lineSegments>
+      <mesh><sphereGeometry args={[1.025, 64, 48]} /><meshBasicMaterial color="#97c0d0" side={THREE.BackSide} transparent opacity={0.12} depthWrite={false} /></mesh>
+      {trails.map((geometry, index) => <mesh key={index} geometry={geometry}><meshBasicMaterial color="#9fceeb" /></mesh>)}
+      {target && <mesh ref={marker} position={MARKER_START}><sphereGeometry args={[0.017, 16, 12]} /><meshBasicMaterial color="#ecf9ff" /></mesh>}
     </group>
   );
 }
 
-export default function Globe3D() {
-  const [issPoints, setIssPoints] = useState<IssPoint[]>([]);
-  const [issTarget, setIssTarget] = useState<THREE.Vector3 | null>(null);
-
+function CameraControls({ follow, reduced }: { follow: boolean; reduced: boolean }) {
+  const { camera, gl, invalidate } = useThree();
+  const control = useRef<OrbitControls | null>(null);
   useEffect(() => {
-    return subscribeIss((snapshot) => {
-      const lat = Number(snapshot.latitude);
-      const lon = Number(snapshot.longitude);
-      if (!snapshot.ok || Number.isNaN(lat) || Number.isNaN(lon)) {
-        return;
-      }
-      const serverTrail = normalizeTrail(snapshot.trail);
-      const pointTimestamp = snapshot.timestamp
-        ? snapshot.timestamp * 1000
-        : Date.now();
-      const livePoint: IssPoint = { lat, lon, ts: pointTimestamp };
-      setIssPoints((prev) => mergeTrails([prev, serverTrail, [livePoint]]));
-      setIssTarget(toIssVector(livePoint));
-    });
-  }, []);
+    const orbit = new OrbitControls(camera, gl.domElement);
+    orbit.enablePan = false; orbit.enableZoom = false; orbit.enabled = !follow;
+    orbit.enableDamping = !reduced; orbit.dampingFactor = 0.08; orbit.rotateSpeed = 0.6;
+    orbit.domElement!.style.touchAction = follow ? "pan-y" : "none";
+    if (follow) { camera.position.set(0, 0, CAMERA_DISTANCE); camera.lookAt(0, 0, 0); }
+    const onChange = () => invalidate();
+    orbit.addEventListener("change", onChange);
+    control.current = orbit;
+    invalidate();
+    return () => { orbit.removeEventListener("change", onChange); orbit.dispose(); control.current = null; };
+  }, [camera, gl, invalidate, follow, reduced]);
+  useFrame(() => { if (control.current?.enabled) control.current.update(); });
+  return null;
+}
 
+const motionQuery = () => window.matchMedia("(prefers-reduced-motion: reduce)");
+function subscribeMotion(callback: () => void) { const query = motionQuery(); query.addEventListener("change", callback); return () => query.removeEventListener("change", callback); }
+function subscribeVisibility(callback: () => void) { document.addEventListener("visibilitychange", callback); return () => document.removeEventListener("visibilitychange", callback); }
+
+class GlobeBoundary extends Component<{children: ReactNode}, {failed: boolean}> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <div className="globe-fallback">The 3D view is unavailable.<br />Live coordinates are shown below.</div> : this.props.children; }
+}
+
+export default function Globe3D() {
+  const [points, setPoints] = useState<Point[]>([]);
+  const [follow, setFollow] = useState(true);
+  const [webgl, setWebgl] = useState<boolean | null>(null);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const probe = document.createElement("canvas");
+      const context = probe.getContext("webgl2");
+      setWebgl(Boolean(context));
+      context?.getExtension("WEBGL_lose_context")?.loseContext();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  const [inView, setInView] = useState(true);
+  const element = useRef<HTMLDivElement>(null);
+  const reduced = useSyncExternalStore(subscribeMotion, () => motionQuery().matches, () => true);
+  const visible = useSyncExternalStore(subscribeVisibility, () => !document.hidden, () => true);
+  const active = inView && visible;
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: "80px" });
+    if (element.current) observer.observe(element.current);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => subscribeIss(snapshot => {
+    if (!snapshot.timestamp || !Number.isFinite(Number(snapshot.latitude)) || !Number.isFinite(Number(snapshot.longitude))) return;
+    const incoming = [...normalizeIssTrail(snapshot.trail), { lat: Number(snapshot.latitude), lon: Number(snapshot.longitude), ts: snapshot.timestamp * 1000 }];
+    setPoints(previous => mergeIssTrail(previous, incoming));
+  }), []);
   return (
-    <div className="mx-auto aspect-square w-[clamp(16rem,78vw,22rem)] max-w-full overflow-visible lg:w-full lg:max-w-[28rem]">
-      {/* Camera distance must satisfy d * sin(fov/2) >= outermost trail envelope
-          ((ISS_RADIUS + marker/tube extent) * group scale), or the trail clips at the limbs. */}
-      <Canvas
-        camera={{ position: [0, 0, 3.75], fov: 34 }}
-        gl={{ alpha: true, antialias: true, localClippingEnabled: true }}
-        style={{ width: "100%", height: "100%" }}
-      >
-        <ambientLight intensity={0.6} />
-        <GlobeMesh size={1.0} issPoints={issPoints} issTarget={issTarget} />
-      </Canvas>
+    <div ref={element} className="iss-globe" data-rendering={active ? reduced ? "reduced" : "active" : "paused"}>
+      <div className="globe-stage" role="img" aria-label="Three-dimensional Earth showing the International Space Station and its recent recorded path">
+        <GlobeBoundary>
+          {webgl === false ? <div className="globe-fallback">3D requires WebGL.<br />Live coordinates are shown below.</div> : webgl ? <Canvas camera={{ position: [0, 0, CAMERA_DISTANCE], fov: 35 }} dpr={[1, 1.5]} frameloop={!active ? "never" : reduced ? "demand" : "always"} gl={{ alpha: true, antialias: true, powerPreference: "low-power" }} fallback={<div className="globe-fallback">3D requires WebGL.<br />Live coordinates are shown below.</div>}>
+            <ambientLight intensity={0.7} /><directionalLight position={[3, 3, 5]} intensity={2} />
+            <Suspense fallback={<mesh><sphereGeometry args={[1, 24, 16]} /><meshBasicMaterial wireframe color="#41564f" /></mesh>}>
+              <GlobeMesh points={points} follow={follow} reduced={reduced} />
+            </Suspense>
+            <CameraControls follow={follow} reduced={reduced} />
+          </Canvas> : null}
+        </GlobeBoundary>
+      </div>
+      <div className="globe-toolbar">
+        <span className="orbit-legend"><i aria-hidden="true" />ISS · recent path</span>
+        <button type="button" className="globe-control" aria-pressed={!follow} onClick={() => setFollow(value => !value)}>{follow ? "Explore globe" : "Follow ISS"}<span aria-hidden="true">{follow ? " ↗" : " ↺"}</span></button>
+      </div>
+      <p className="globe-hint" aria-live="polite">{follow ? "Following the station in real time" : "Drag to rotate · select Follow ISS to return"}</p>
     </div>
   );
 }

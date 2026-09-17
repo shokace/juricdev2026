@@ -321,8 +321,12 @@ export default function Home() {
 
             <Panel title="About Me" className="about-panel lg:flex-1">
               <p className="about-copy">
-                Software engineer focused on real-time data visualization, machine learning,
-                and performance-driven real-time systems.
+                I build software for secure storage, real-time visualization, and audio.
+                My projects include the <a href="https://github.com/shokace/sefaly-cli" target="_blank" rel="noreferrer">Sefaly CLI</a>,
+                satellite trackers, and <a href="https://github.com/shokace/FAFR" target="_blank" rel="noreferrer">FAFR</a>&apos;s Fourier-based audio experiments.
+              </p>
+              <p className="about-copy">
+                I also produce music as <a href="https://linktr.ee/ezkie" target="_blank" rel="noreferrer">Ezkie</a>.
               </p>
             </Panel>
 
@@ -345,11 +349,11 @@ export default function Home() {
           </div>
 
           <div className="col-span-12 lg:col-span-6 flex min-w-0 flex-col gap-4" data-dashboard-column="globe">
-            <Panel title="ISS tracking · live orbital telemetry" className="flex flex-1 flex-col">
+            <Panel title="ISS tracking · live orbital telemetry" className="tracker-panel flex flex-1 flex-col">
               <div className="flex w-full flex-1 flex-col items-center justify-center gap-2 overflow-visible">
                 <Globe3D />
               </div>
-              <div className="-mt-4">
+              <div>
                 <IssTelemetry />
               </div>
             </Panel>
