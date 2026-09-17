@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import SiteEffects from "@/components/site-effects";
 import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
@@ -161,7 +162,7 @@ async function getGithubGrid(user: string, year: number): Promise<GithubContribu
 
 function NeverLandingRows({ stats }: { stats: NeverLandingStats | null }) {
   return (
-    <div className="space-y-3 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
+    <div className="space-y-3 text-[0.78rem] tracking-normal text-muted">
       <div className="flex items-center justify-between">
         <span>Unique Visitors</span>
         <span className="text-[color:var(--text0)]">
@@ -199,14 +200,14 @@ function GithubGridView({ grid }: { grid: GithubContributionGrid }) {
   const cellMap = new Map(grid.cells.map((cell) => [`${cell.col}-${cell.row}`, cell.level]));
   const levelColors = [
     "rgba(255, 255, 255, 0.04)",
-    "rgba(53, 242, 139, 0.2)",
-    "rgba(53, 242, 139, 0.38)",
-    "rgba(53, 242, 139, 0.58)",
-    "rgba(53, 242, 139, 0.78)",
+    "rgba(145, 200, 175, 0.22)",
+    "rgba(145, 200, 175, 0.42)",
+    "rgba(145, 200, 175, 0.65)",
+    "rgba(145, 200, 175, 0.9)",
   ];
 
   return (
-    <div className="mt-4 overflow-hidden rounded-sm border border-[color:var(--border2)] bg-black/30 p-3">
+    <div className="github-calendar" role="region" aria-label="GitHub contribution calendar" tabIndex={0}>
       <div
         className="gh-grid grid gap-[3px]"
         style={{
@@ -221,6 +222,7 @@ function GithubGridView({ grid }: { grid: GithubContributionGrid }) {
               <span
                 key={`${col}-${row}`}
                 className={`gh-cell gh-level-${level}`}
+                title={grid.cells.find((cell) => cell.col === col && cell.row === row)?.date}
                 style={{
                   display: "block",
                   backgroundColor: levelColors[level],
@@ -252,11 +254,11 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section className={`hud-panel min-w-0 rounded-sm p-4 ${className}`}>
+    <section className={`hud-panel min-w-0 ${className}`}>
       {title ? (
-        <div className="mb-4 flex items-center justify-between text-[0.7rem] uppercase tracking-[0.3em] text-faint">
-          <span>{title}</span>
-          {headerRight ?? <span className="glow-red">●</span>}
+        <div className="panel-heading">
+          <h2>{title}</h2>
+          {headerRight}
         </div>
       ) : null}
       {children}
@@ -271,50 +273,37 @@ export default function Home() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="hud-grid hud-noise min-h-screen">
-      <main className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        <Panel>
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+    <div className="site-shell min-h-screen">
+      <SiteEffects />
+      <main className="site-main">
+        <Panel className="profile-hero">
+          <div className="profile-intro">
             <div>
-              <div className="text-[0.7rem] uppercase tracking-[0.3em] text-faint">Profile</div>
-              <h1 className="mt-3 text-3xl text-[color:var(--text0)]">Petar Juric</h1>
-              <p className="mt-2 text-[0.85rem] uppercase tracking-[0.25em] text-muted">
-                Software Engineer
-              </p>
+              <p className="eyebrow">Profile</p>
+              <h1>Petar Juric<span className="name-period" aria-hidden="true">.</span></h1>
+              <p className="profile-role">Software Engineer</p>
             </div>
-            <div className="w-full min-w-0 md:w-auto">
-              <div className="text-[0.7rem] uppercase tracking-[0.3em] text-faint md:text-right">
-                Projects &amp; Links
-              </div>
-              <div className="relative mt-3 grid w-full min-w-0 grid-cols-6 gap-1 pb-6 text-[0.48rem] uppercase tracking-[0.04em] text-faint [@media(min-width:375px)]:gap-1.5 [@media(min-width:375px)]:text-[0.52rem] [@media(min-width:375px)]:tracking-[0.06em] sm:gap-2 sm:text-[0.62rem] sm:tracking-[0.12em] md:w-auto md:gap-3 md:text-[0.7rem] md:tracking-[0.2em]">
+            <nav className="project-nav" aria-label="Projects and links">
+              <p className="eyebrow">Projects &amp; Links</p>
+              <div className="project-links">
                 {links.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
+                  <a key={link.label} href={link.href} className="project-link"
                     aria-label={`${link.label} — ${link.description}`}
-                    className="group flex min-w-0 min-h-[2.75rem] items-center justify-center rounded-sm border border-[color:var(--border2)] px-1 py-2 text-center leading-tight break-words hover:border-[color:var(--border)] [@media(min-width:375px)]:px-1.5 sm:px-2.5 md:px-3"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                    title={link.description} target="_blank" rel="noreferrer">
                     <HeaderIcon icon={link.icon} />
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-0 bottom-0 text-left text-[0.55rem] leading-tight tracking-[0.12em] text-muted opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 md:left-auto md:right-0 md:w-max md:whitespace-nowrap md:text-right"
-                    >
-                      <span className="text-[color:var(--text0)]">{link.label}</span>
-                      <span className="text-faint"> · {link.description}</span>
-                    </span>
+                    <span>{link.label}</span>
+                    <span className="link-arrow" aria-hidden="true">↗</span>
                   </a>
                 ))}
               </div>
-            </div>
+            </nav>
           </div>
         </Panel>
 
-        <section className="mt-4 grid grid-cols-12 items-stretch gap-4" data-dashboard>
+        <section className="dashboard-grid mt-5 grid grid-cols-12 items-stretch gap-4" data-dashboard>
           <div className="col-span-12 lg:col-span-3 flex min-w-0 flex-col gap-4" data-dashboard-column="profile">
-            <Panel title="Detail">
-              <div className="space-y-4 text-[0.75rem] uppercase tracking-[0.2em] text-muted">
+            <Panel title="Detail" className="detail-panel">
+              <div className="space-y-4 text-[0.75rem] tracking-normal text-muted">
                 <div className="flex items-center justify-between">
                   <span>Location</span>
                   <span className="text-[color:var(--text0)]">USA</span>
@@ -330,8 +319,8 @@ export default function Home() {
               </div>
             </Panel>
 
-            <Panel title="About Me" className="lg:flex-1">
-              <p className="text-[0.72rem] uppercase leading-6 tracking-[0.2em] text-muted">
+            <Panel title="About Me" className="about-panel lg:flex-1">
+              <p className="about-copy">
                 Software engineer focused on real-time data visualization, machine learning,
                 and performance-driven real-time systems.
               </p>

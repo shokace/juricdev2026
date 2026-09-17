@@ -53,7 +53,7 @@ export default function GithubActivity() {
   }, []);
 
   return (
-    <div className="space-y-3 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
+    <div className="space-y-3 text-[0.78rem] tracking-normal text-muted">
       {items.length ? (
         items.map((item) => (
           <a
@@ -61,14 +61,14 @@ export default function GithubActivity() {
             href={item.url}
             target="_blank"
             rel="noreferrer"
-            className="block border-b border-[color:var(--border2)] pb-3 last:border-0 hover:text-[color:var(--text0)] hover:bg-white/5 hover:px-2 hover:py-2 transition-colors"
+            className="activity-link"
           >
             <div className="flex items-center justify-between text-[0.7rem] text-faint">
               <span className="max-w-[60%] truncate">{item.repo}</span>
               <span>{item.type === "commit" ? "Commit" : "PR"}</span>
             </div>
-            <div className="mt-2 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
-              <span className="block max-w-full truncate">{truncate(item.title, 90)}</span>
+            <div className="mt-1.5 text-[0.78rem] leading-5 text-muted">
+              <span className="block max-w-full truncate" title={item.title}>{truncate(item.title, 90)}</span>
             </div>
           </a>
         ))

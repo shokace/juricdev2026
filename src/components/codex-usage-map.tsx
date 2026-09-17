@@ -26,7 +26,7 @@ export default function CodexUsageMap({ dailyUsage, updatedAt }: {
 
   return (
     <div className="codex-map border-t border-[color:var(--border)] pt-4">
-      <div className="mb-3 flex items-center justify-between gap-2 text-[0.6rem] tracking-[0.12em]">
+      <div className="mb-3 flex items-center justify-between gap-2 text-[0.6rem] tracking-normal">
         <h3 className="text-[color:var(--text0)]">Usage Map</h3>
         <span className="text-faint">16 weeks</span>
       </div>

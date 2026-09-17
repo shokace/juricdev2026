@@ -152,7 +152,7 @@ export default function WavEquation() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="audio-tool">
       <input
         id="wav-upload"
         type="file"
@@ -162,12 +162,12 @@ export default function WavEquation() {
       />
       <label
         htmlFor="wav-upload"
-        className="block cursor-pointer rounded-sm border border-[color:var(--border2)] px-3 py-3 text-center text-[0.72rem] uppercase tracking-[0.2em] text-[color:var(--text0)] hover:border-[color:var(--border)]"
+        className="audio-upload"
       >
         Choose WAV or MP3 File (Click Here)
       </label>
       {selectedFileName ? (
-        <p className="text-[0.7rem] uppercase tracking-[0.12em] text-faint">
+        <p className="text-[0.7rem] tracking-normal text-faint">
           Selected: {selectedFileName}
         </p>
       ) : null}
@@ -194,7 +194,7 @@ export default function WavEquation() {
           if (!file) return;
           await processFile(file);
         }}
-        className={`h-64 overflow-auto rounded-sm border bg-black/30 p-3 text-[0.72rem] ${
+        className={`audio-output ${
           isDragOver
             ? "border-[color:var(--text0)]"
             : "border-[color:var(--border2)]"
@@ -203,7 +203,7 @@ export default function WavEquation() {
         {isProcessing ? (
           <div className="flex h-full items-center justify-center gap-3 text-faint">
             <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[color:var(--border2)] border-t-[color:var(--text0)]" />
-            <span className="uppercase tracking-[0.2em]">Processing...</span>
+            <span className="tracking-normal">Processing...</span>
           </div>
         ) : null}
 
@@ -221,7 +221,7 @@ export default function WavEquation() {
         ) : null}
 
         {!isProcessing && !error && !equationText ? (
-          <p className="text-faint uppercase tracking-[0.18em]">
+          <p className="text-faint tracking-normal">
             {isDragOver
               ? "Drop WAV or MP3 file here..."
               : "Upload a WAV or MP3 file to generate f(t)."}
