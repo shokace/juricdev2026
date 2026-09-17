@@ -14,3 +14,12 @@ test("cost uses actual USD cents, not assumed model prices", () => {
  assert.throws(() => summarizeAnthropicCost([{ results: [{ currency: "USD", amount: "NaN" }] }]));
  assert.throws(() => summarizeAnthropicUsage([{ starting_at: "2026-09-15", results: [{ output_tokens: -1 }] }], 123, "2026-01-01"));
 });
+test("persisted snapshots are validated and private fields are discarded", async () => {
+ const { normalizeAnthropicSnapshot } = await import("../src/lib/anthropic-usage.mjs");
+ const snapshot = { ...summarizeAnthropicUsage([], Date.now(), "2026-02-01"), secret: "private", stale: true };
+ assert.equal("secret" in normalizeAnthropicSnapshot(snapshot), false);
+ assert.equal("stale" in normalizeAnthropicSnapshot(snapshot), false);
+ assert.throws(() => normalizeAnthropicSnapshot({ ...snapshot, total_tokens: -1 }));
+ assert.throws(() => normalizeAnthropicSnapshot({ ...snapshot, since: "2026-02-31" }));
+ assert.throws(() => normalizeAnthropicSnapshot({ ...snapshot, updated_at: Date.now()+120_000 }));
+});

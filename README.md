@@ -143,6 +143,8 @@ The orange Claude card restores `/api/anthropic/usage` using the existing
 Anthropic **API** usage (not the Claude subscription), plus a 16-week orange map.
 The endpoint aggregates all daily pages, strips organization/key identifiers,
 caches successful reports for an hour, and retains stale data on transient errors.
+The last good allowlisted summary also persists in the existing Cloudflare KV
+namespace under `anthropic:api-usage:v1`, so cold starts can reuse it.
 API cost comes from the actual USD cost report; if unavailable it stays blank,
 rather than estimating every model at one price. Credentials never reach the browser.
 

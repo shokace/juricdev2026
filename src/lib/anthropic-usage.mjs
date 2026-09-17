@@ -38,3 +38,21 @@ export function summarizeAnthropicCost(buckets) {
   }
   return cents / 100;
 }
+
+export const ANTHROPIC_USAGE_KEY = "anthropic:api-usage:v1";
+export function normalizeAnthropicSnapshot(value) {
+  const date = input => {
+    if (typeof input !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(input) || !Number.isFinite(Date.parse(input)) || new Date(input).toISOString().slice(0, 10) !== input) throw new Error("Invalid usage date");
+    return input;
+  };
+  if (!value || !Array.isArray(value.daily_usage) || !value.updated_at || value.updated_at > Date.now() + 60_000) throw new Error("Invalid usage snapshot");
+  const cost = value.total_cost_usd;
+  if (cost !== null && (typeof cost !== "number" || !Number.isFinite(cost) || cost < 0)) throw new Error("Invalid cost");
+  return {
+    input_tokens: count(value.input_tokens), output_tokens: count(value.output_tokens),
+    cached_read_tokens: count(value.cached_read_tokens), cached_creation_tokens: count(value.cached_creation_tokens),
+    total_tokens: count(value.total_tokens), total_cost_usd: cost,
+    updated_at: count(value.updated_at), since: date(value.since),
+    daily_usage: value.daily_usage.map(day => ({ date: date(day.date), tokens: count(day.tokens) })),
+  };
+}
