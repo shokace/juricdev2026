@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import SiteEffects from "@/components/site-effects";
+import AsciiBackground from "@/components/ascii-background";
 import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
@@ -291,8 +292,9 @@ export default function Home() {
                     aria-label={`${link.label} — ${link.description}`}
                     title={link.description} target="_blank" rel="noreferrer">
                     <HeaderIcon icon={link.icon} />
-                    <span>{link.label}</span>
-                    <span className="link-arrow" aria-hidden="true">↗</span>
+                    <span className="project-caption" aria-hidden="true">
+                      <strong>{link.label}</strong><span> · {link.description}</span>
+                    </span>
                   </a>
                 ))}
               </div>
@@ -398,6 +400,7 @@ export default function Home() {
           </Panel>
         </div>
       </main>
+      <AsciiBackground />
     </div>
   );
 }

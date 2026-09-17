@@ -149,3 +149,13 @@ API cost comes from the actual USD cost report; if unavailable it stays blank,
 rather than estimating every model at one price. Credentials never reach the browser.
 
 Run `npm run test:anthropic` to verify aggregation and the cents-to-dollars conversion.
+
+## Ambient background
+
+The decorative ASCII flow uses a small cached glyph atlas on a 2D canvas, capped
+at 24 fps on desktop and 18 fps on phones. Mouse movements leave a soft, fading
+character trail; phones use a slow wandering source without intercepting touches.
+The renderer becomes idle when a desktop trail has faded. It pauses while the tab is hidden,
+respects reduced motion, and has a pause control below the content. Static blurred
+gradients remain available when canvas is unsupported. Project links use the
+original compact icon row with descriptions on hover and keyboard focus.
