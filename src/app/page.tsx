@@ -321,9 +321,9 @@ export default function Home() {
 
             <Panel title="About Me" className="about-panel lg:flex-1">
               <p className="about-copy">
-                I build software for secure storage, real-time visualization, and audio.
-                My projects include the <a href="https://github.com/shokace/sefaly-cli" target="_blank" rel="noreferrer">Sefaly CLI</a>,
-                satellite trackers, and <a href="https://github.com/shokace/FAFR" target="_blank" rel="noreferrer">FAFR</a>&apos;s Fourier-based audio experiments.
+                I&apos;m the creator of <a href="https://www.sefaly.com" target="_blank" rel="noreferrer">Sefaly</a>,
+                a secure cloud storage platform, and its companion <a href="https://github.com/shokace/sefaly-cli" target="_blank" rel="noreferrer">CLI</a>.
+                I also build satellite trackers and Fourier-based audio experiments with <a href="https://github.com/shokace/FAFR" target="_blank" rel="noreferrer">FAFR</a>.
               </p>
               <p className="about-copy">
                 I also produce music as <a href="https://linktr.ee/ezkie" target="_blank" rel="noreferrer">Ezkie</a>.
