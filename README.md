@@ -129,3 +129,21 @@ on-demand rendering and removes pulsing/interpolated transitions. Live coordinat
 remain available when WebGL is unavailable. The feed times out after eight seconds,
 retains the last known position on failure, and marks readings over 45 seconds old
 as reconnecting. Run `npm run test:iss` for coordinate, freshness, and trail checks.
+
+## Usage card stack
+
+Codex and Claude share a fixed-height card stack. Hover or keyboard focus reveals
+its next card; click the card background or the labeled swap button to deal it to
+the back. Heatmap cells retain their own mouse, touch and arrow-key interactions.
+Touch devices get a brief peek when the stack enters view. Reduced motion swaps
+instantly, and the rear card is inert and hidden from assistive technology.
+
+The orange Claude card restores `/api/anthropic/usage` using the existing
+`ANTHROPIC_ADMIN_KEY` and `ANTHROPIC_USAGE_START_DATE` server settings. It displays
+Anthropic **API** usage (not the Claude subscription), plus a 16-week orange map.
+The endpoint aggregates all daily pages, strips organization/key identifiers,
+caches successful reports for an hour, and retains stale data on transient errors.
+API cost comes from the actual USD cost report; if unavailable it stays blank,
+rather than estimating every model at one price. Credentials never reach the browser.
+
+Run `npm run test:anthropic` to verify aggregation and the cents-to-dollars conversion.

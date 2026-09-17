@@ -7,9 +7,10 @@ const number = new Intl.NumberFormat("en-US");
 const dayLabel = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 const monthLabel = new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" });
 
-export default function CodexUsageMap({ dailyUsage, updatedAt }: {
+export default function CodexUsageMap({ dailyUsage, updatedAt, provider = "Codex" }: {
   dailyUsage: { date: string; tokens: number }[] | null;
   updatedAt: number;
+  provider?: "Codex" | "Claude";
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const cells = buildCodexHeatmap(dailyUsage ?? [], updatedAt);
@@ -37,7 +38,7 @@ export default function CodexUsageMap({ dailyUsage, updatedAt }: {
           <div className="mb-1.5 grid grid-cols-16 gap-[3px] text-[0.5rem] tracking-normal text-faint" aria-hidden="true">
             {months.map((month, index) => <span key={index} className="overflow-visible">{month}</span>)}
           </div>
-          <div className="grid grid-flow-col grid-cols-16 grid-rows-7 gap-[3px]" role="group" aria-label="Codex daily token usage over the last 16 weeks. Use arrow keys to explore days.">
+          <div className="grid grid-flow-col grid-cols-16 grid-rows-7 gap-[3px]" role="group" aria-label={`${provider} daily token usage over the last 16 weeks. Use arrow keys to explore days.`}>
             {cells.map((cell, index) => cell.future ? (
               <span key={cell.date} className="aspect-square" aria-hidden="true" />
             ) : (
@@ -65,7 +66,7 @@ export default function CodexUsageMap({ dailyUsage, updatedAt }: {
           </div>
           <div className="mt-2 flex items-center justify-between gap-2 text-[0.5rem] tracking-[0.08em] text-faint">
             <span>Daily tokens</span>
-            <span className="flex items-center gap-1" aria-label="Darker green means fewer tokens; brighter green means more tokens.">
+            <span className="flex items-center gap-1" aria-label="Darker cells mean fewer tokens; brighter cells mean more tokens.">
               Less {[0, 1, 2, 3, 4].map((level) => <span key={level} className={`gh-level-${level} h-2 w-2 rounded-[1px]`} aria-hidden="true" />)} More
             </span>
           </div>

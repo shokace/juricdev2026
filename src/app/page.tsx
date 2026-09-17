@@ -3,7 +3,7 @@ import SiteEffects from "@/components/site-effects";
 import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
-import CodexUsage from "@/components/codex-usage";
+import UsageDeck from "@/components/usage-deck";
 import WavEquation from "@/components/wav-equation";
 import FafrInfoButton from "@/components/fafr-info-button";
 import {
@@ -367,9 +367,7 @@ export default function Home() {
               </div>
             </Panel>
 
-            <Panel title="Codex Usage" className="flex flex-1 flex-col">
-              <CodexUsage />
-            </Panel>
+            <UsageDeck />
 
           </div>
         </section>

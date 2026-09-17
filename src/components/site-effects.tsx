@@ -16,7 +16,7 @@ export default function SiteEffects() {
         ));
       }
     }, { threshold: 0.06 });
-    document.querySelectorAll(".hud-panel").forEach((panel) => observer.observe(panel));
+    document.querySelectorAll(".hud-panel:not(.usage-card), .usage-deck").forEach((panel) => observer.observe(panel));
     const stop = () => { if (preference.matches) animations.forEach((animation) => animation.cancel()); };
     preference.addEventListener("change", stop);
     return () => { observer.disconnect(); animations.forEach((animation) => animation.cancel()); preference.removeEventListener("change", stop); };
