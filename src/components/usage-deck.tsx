@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import CodexUsage from "@/components/codex-usage";
 import AnthropicUsage from "@/components/anthropic-usage";
 
@@ -58,8 +59,11 @@ export default function UsageDeck() {
                 swap();
               }}>
               <div className="panel-heading usage-card-heading">
-                <h2><span className="usage-mark" aria-hidden="true">{provider === "codex" ? "◈" : "✳"}</span>{provider === "codex" ? "Codex Usage" : "Claude Usage"}</h2>
-                <span className="usage-card-number" aria-hidden="true">{provider === "codex" ? "01" : "02"}</span>
+                <h2>
+                  <Image className={`usage-mark usage-mark-${provider}`} src={`/brands/${provider === "codex" ? "openai" : "anthropic"}.svg`}
+                    width={provider === "codex" ? 22 : 28} height={22} alt="" aria-hidden="true" unoptimized />
+                  {provider === "codex" ? "Codex Usage" : "Claude Usage"}
+                </h2>
               </div>
               <div className="usage-card-body">
                 {provider === "codex" ? <CodexUsage /> : <AnthropicUsage />}
