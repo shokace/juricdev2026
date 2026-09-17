@@ -202,3 +202,20 @@ button { font: inherit; }
 .background-controls button:hover { color: var(--text0); }
 .background-controls button:disabled { cursor: default; }
 @media (max-width: 767px) { .ambient-glow { filter: blur(35px); } .ascii-flow { opacity: .85; } .background-controls { padding-right: 18px; } }
+
+.neverlanding-panel .panel-heading { align-items: center; gap: 8px; }
+.neverlanding-panel h2 span { display: block; }
+.website-link { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 3px; color: var(--text2); transition: color 180ms, border-color 180ms, background 180ms; }
+.website-link:hover, .website-link:focus-visible { color: var(--accent-green); border-color: #628a77; background: #192820; }
+.website-link:active { transform: translateY(1px); }
+
+.usage-card-codex { --accent-green: #c4b5fd; --text0: #f0ecfa; --text1: #c3bdd5; --text2: #a299b5; --border: #443953; border-color: #574570; background: #1b1724; }
+.usage-card-codex .gh-level-0 { background: #2b2337; }
+.usage-card-codex .gh-level-1 { background: #514166; }
+.usage-card-codex .gh-level-2 { background: #786395; }
+.usage-card-codex .gh-level-3 { background: #a58acb; }
+.usage-card-codex .gh-level-4 { background: #cfb4f6; }
+.usage-card-codex .gh-cell { border-color: #c4b5fd0d; }
+.usage-deck[data-front="codex"] .usage-swap-icon { color: #c4b5fd; }
+.usage-pagination i:first-child.selected { background: #c4b5fd; }
+@media (hover: hover) and (pointer: fine) { .usage-card-codex:hover { border-color: #8972a7; } }

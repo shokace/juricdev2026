@@ -128,13 +128,6 @@ function formatGigabytes(bytes: number) {
   return `${gb.toFixed(2)} GB`;
 }
 
-function formatWindowHours(hours: number) {
-  if (hours % 24 === 0) {
-    return `${hours / 24}d`;
-  }
-  return `${hours}h`;
-}
-
 async function getNeverLandingStats(): Promise<NeverLandingStats | null> {
   try {
     return await fetchNeverLandingStats();
@@ -180,12 +173,6 @@ function NeverLandingRows({ stats }: { stats: NeverLandingStats | null }) {
         <span>Edge Data</span>
         <span className="text-[color:var(--text0)]">
           {stats ? formatGigabytes(stats.edgeResponseBytes) : "--"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span>Window</span>
-        <span className="text-[color:var(--text0)]">
-          {stats ? formatWindowHours(stats.windowHours) : "--"}
         </span>
       </div>
     </div>
@@ -340,7 +327,18 @@ export default function Home() {
                   rel="noreferrer"
                   className="hover:text-[color:var(--text0)]"
                 >
-                  NeverLanding.page Stats
+                  <span>Neverlanding.page</span>{" "}<span>Weekly Stats</span>
+                </a>
+              }
+              className="neverlanding-panel"
+              headerRight={
+                <a className="website-link" href="https://neverlanding.page" target="_blank" rel="noreferrer"
+                  aria-label="Visit Neverlanding.page" title="Visit Neverlanding.page">
+                  <svg viewBox="0 0 32 32" width="30" height="30" fill="none" aria-hidden="true">
+                    <path d="M3.5 10.5a13 13 0 0 1 25 0M3.5 21.5a13 13 0 0 0 25 0M11 10c1-9 9-9 10 0M11 22c1 9 9 9 10 0M6 7.5h20M6 24.5h20"
+                      stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                    <text x="16" y="19" textAnchor="middle" fill="currentColor" fontFamily="monospace" fontWeight="600" fontSize="8">www</text>
+                  </svg>
                 </a>
               }
             >
