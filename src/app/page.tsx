@@ -244,13 +244,15 @@ function Panel({
   title,
   children,
   headerRight,
+  className = "",
 }: {
   title?: React.ReactNode;
   children: React.ReactNode;
   headerRight?: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <section className="hud-panel rounded-sm p-4">
+    <section className={`hud-panel min-w-0 rounded-sm p-4 ${className}`}>
       {title ? (
         <div className="mb-4 flex items-center justify-between text-[0.7rem] uppercase tracking-[0.3em] text-faint">
           <span>{title}</span>
@@ -309,8 +311,8 @@ export default function Home() {
           </div>
         </Panel>
 
-        <section className="mt-6 grid grid-cols-12 gap-4">
-          <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
+        <section className="mt-4 grid grid-cols-12 items-stretch gap-4" data-dashboard>
+          <div className="col-span-12 lg:col-span-3 flex min-w-0 flex-col gap-4" data-dashboard-column="profile">
             <Panel title="Detail">
               <div className="space-y-4 text-[0.75rem] uppercase tracking-[0.2em] text-muted">
                 <div className="flex items-center justify-between">
@@ -328,7 +330,7 @@ export default function Home() {
               </div>
             </Panel>
 
-            <Panel title="About Me">
+            <Panel title="About Me" className="lg:flex-1">
               <p className="text-[0.72rem] uppercase leading-6 tracking-[0.2em] text-muted">
                 Software engineer focused on real-time data visualization, machine learning,
                 and performance-driven real-time systems.
@@ -353,9 +355,9 @@ export default function Home() {
             </Panel>
           </div>
 
-          <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
-            <Panel title="ISS tracking · live orbital telemetry">
-              <div className="flex w-full flex-col items-center justify-center gap-2 overflow-visible">
+          <div className="col-span-12 lg:col-span-6 flex min-w-0 flex-col gap-4" data-dashboard-column="globe">
+            <Panel title="ISS tracking · live orbital telemetry" className="flex flex-1 flex-col">
+              <div className="flex w-full flex-1 flex-col items-center justify-center gap-2 overflow-visible">
                 <Globe3D />
               </div>
               <div className="-mt-4">
@@ -363,24 +365,23 @@ export default function Home() {
               </div>
             </Panel>
 
-            
-
-            
           </div>
 
-          <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
+          <div className="col-span-12 lg:col-span-3 flex min-w-0 flex-col gap-4" data-dashboard-column="activity">
             <Panel title="Contributions">
-              <GithubActivity />
+              <div className="lg:max-h-32 lg:overflow-y-auto lg:pr-1 [scrollbar-width:thin]" role="region" aria-label="Recent GitHub contributions">
+                <GithubActivity />
+              </div>
             </Panel>
 
-            <Panel title="Codex Usage">
+            <Panel title="Codex Usage" className="flex flex-1 flex-col">
               <CodexUsage />
             </Panel>
 
           </div>
         </section>
 
-        <div className="mt-6">
+        <div className="mt-4">
           <Panel
             title={
               <a
@@ -398,7 +399,7 @@ export default function Home() {
           </Panel>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4">
           <Panel title={`GitHub Activity ${currentYear}`}>
             <Suspense fallback={<GithubGridView grid={getEmptyGithubGrid("shokace", currentYear)} />}>
               <GithubGridLive user="shokace" year={currentYear} />

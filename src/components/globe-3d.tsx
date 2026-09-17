@@ -374,7 +374,7 @@ export default function Globe3D() {
   }, []);
 
   return (
-    <div className="mx-auto aspect-square w-[clamp(16rem,78vw,22rem)] max-w-full overflow-visible">
+    <div className="mx-auto aspect-square w-[clamp(16rem,78vw,22rem)] max-w-full overflow-visible lg:w-full lg:max-w-[28rem]">
       {/* Camera distance must satisfy d * sin(fov/2) >= outermost trail envelope
           ((ISS_RADIUS + marker/tube extent) * group scale), or the trail clips at the limbs. */}
       <Canvas

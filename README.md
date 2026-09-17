@@ -24,6 +24,10 @@ account using the official app-server `account/usage/read` method. This reflects
 Codex account activity, not OpenAI API organization billing. The account summary
 does not provide an input/output breakdown or dollar cost, so the panel shows
 lifetime tokens, peak daily tokens, current streak, and longest turn instead.
+A 16-week heatmap underneath shows daily token counts from the same account
+response. Hover, tap, or focus a day (arrow keys navigate) for its exact count.
+Dates use the service's date buckets without converting to the visitor's timezone;
+future days are blank. Missing history is shown as unavailable, not zero activity.
 
 Prerequisites: Node 20.12+, a current Codex CLI with `account/usage/read`, and an
 authenticated Codex account (`codex login`). The sync uses the existing local
@@ -41,8 +45,9 @@ npm run sync:codex:install      # install the macOS background refresh
 
 Install from a permanent checkout. The launch agent runs immediately, at login,
 and every 15 minutes while the Mac is awake. Credentials stay in the local Codex
-login and `.env.local`; no credentials, account identifiers, prompts, session
-contents, or daily history are uploaded. Failed refreshes retain the last good
+login and `.env.local`; only aggregate metrics and daily dates/token counts are
+uploaded, never credentials, account identifiers, prompts, or session contents.
+Failed refreshes retain the last good
 snapshot. The panel polls every minute and marks snapshots over an hour old as
 `STALE`, with their last update time. `SYNCED` indicates snapshot freshness, not
 real-time billing; Codex may aggregate account activity with a delay.

@@ -38,7 +38,7 @@ export async function readAccountUsage(binary = process.env.CODEX_BIN || "codex"
     });
     child.stdin.write('{"method":"initialized"}\n');
     const result = await request("account/usage/read", {});
-    return snapshotFromSummary(result.summary);
+    return snapshotFromSummary(result.summary, Date.now(), result.dailyUsageBuckets);
   } finally {
     clearTimeout(timeout);
     lines.close();

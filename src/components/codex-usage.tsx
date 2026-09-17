@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CODEX_USAGE_STALE_MS, normalizeCodexUsage } from "@/lib/codex-usage.mjs";
+import CodexUsageMap from "@/components/codex-usage-map";
 
 type Usage = ReturnType<typeof normalizeCodexUsage>;
 const number = new Intl.NumberFormat("en-US");
@@ -44,17 +45,18 @@ export default function CodexUsage() {
   ];
 
   return (
-    <div className="space-y-3 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
+    <div className="flex flex-1 flex-col gap-3 text-[0.72rem] uppercase tracking-[0.2em] text-muted">
       {rows.map(([label, value]) => (
         <div key={label} className="flex items-center justify-between gap-2">
           <span>{label}</span>
-          <span className="text-[color:var(--text0)] tabular-nums">{value}</span>
+          <span className="text-[color:var(--text0)] tabular-nums tracking-[0.1em]">{value}</span>
         </div>
       ))}
       <div className="flex items-center justify-between" role="status">
         <span>Status</span>
         <span className={status === "SYNCED" ? "text-[color:var(--accent-green)]" : status === "UNAVAILABLE" ? "text-[color:var(--accent-red)]" : "text-muted"}>{status}</span>
       </div>
+      {usage && <div className="mt-auto pt-2"><CodexUsageMap dailyUsage={usage.daily_usage} updatedAt={usage.updated_at} /></div>}
       {usage && (
         <p className="text-[0.6rem] tracking-[0.1em]" title="Account totals refresh every 15 minutes while my Mac is awake.">
           Updated <time dateTime={new Date(usage.updated_at).toISOString()}>{new Date(usage.updated_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time>
