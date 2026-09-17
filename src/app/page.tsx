@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Globe3D from "@/components/globe-3d";
 import GithubActivity from "@/components/github-activity";
 import IssTelemetry from "@/components/iss-telemetry";
-import AnthropicUsage from "@/components/anthropic-usage";
+import CodexUsage from "@/components/codex-usage";
 import WavEquation from "@/components/wav-equation";
 import FafrInfoButton from "@/components/fafr-info-button";
 import {
@@ -373,8 +373,8 @@ export default function Home() {
               <GithubActivity />
             </Panel>
 
-            <Panel title="Claude Usage">
-              <AnthropicUsage />
+            <Panel title="Codex Usage">
+              <CodexUsage />
             </Panel>
 
           </div>

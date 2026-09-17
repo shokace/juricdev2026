@@ -61,3 +61,12 @@ It hits `ISS_REFRESH_URL` (`https://juric.dev/api/iss`) every minute so the KV t
 updating with no visitors. Runtime env vars (`KVTok`, `CLOUDFLARE_ACCOUNT_ID`,
 `CLOUDFLARE_KV_NAMESPACE_ID_ISS`, the Anthropic/OpenAI admin keys) live in the Cloudflare
 dashboard for the Pages project, not in the repo — see README for the KV setup.
+
+## Codex usage refresh
+
+The Codex panel uses the existing KV credentials and namespace, so a Pages deploy
+does not require Codex or OpenAI credentials. After changing the sync script,
+update the permanent checkout at `/Users/ezkie/Repos/juricDev2026` and run
+`npm run sync:codex`. Run `npm run sync:codex:install` on first setup or after
+moving the checkout or Node/Codex binaries. Verify `/api/codex/usage` returns a
+fresh `updated_at` and that the panel shows `SYNCED`.

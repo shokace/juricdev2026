@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:codex": "node --test scripts/codex-usage.test.mjs",
+    "sync:codex": "node scripts/sync-codex-usage.mjs",
+    "sync:codex:install": "node scripts/install-codex-sync.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.5.0",

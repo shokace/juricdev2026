@@ -16,6 +16,47 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Codex account usage
+
+The homepage reads `/api/codex/usage`, which serves an allowlisted account summary
+from Cloudflare KV. `scripts/sync-codex-usage.mjs` reads the signed-in local Codex
+account using the official app-server `account/usage/read` method. This reflects
+Codex account activity, not OpenAI API organization billing. The account summary
+does not provide an input/output breakdown or dollar cost, so the panel shows
+lifetime tokens, peak daily tokens, current streak, and longest turn instead.
+
+Prerequisites: Node 20.12+, a current Codex CLI with `account/usage/read`, and an
+authenticated Codex account (`codex login`). The sync uses the existing local
+`.env.local` KV settings: `KVTok`, `CLOUDFLARE_ACCOUNT_ID`, and
+`CLOUDFLARE_KV_NAMESPACE_ID_ISS`. Optionally set
+`CLOUDFLARE_KV_NAMESPACE_ID_CODEX` on both the Mac and Pages to use a separate
+namespace. The key `codex:account-usage:v1` is separate from the ISS trail.
+
+```bash
+npm run test:codex
+npm run sync:codex -- --dry-run  # inspect only the public summary
+npm run sync:codex              # publish the summary to KV
+npm run sync:codex:install      # install the macOS background refresh
+```
+
+Install from a permanent checkout. The launch agent runs immediately, at login,
+and every 15 minutes while the Mac is awake. Credentials stay in the local Codex
+login and `.env.local`; no credentials, account identifiers, prompts, session
+contents, or daily history are uploaded. Failed refreshes retain the last good
+snapshot. The panel polls every minute and marks snapshots over an hour old as
+`STALE`, with their last update time. `SYNCED` indicates snapshot freshness, not
+real-time billing; Codex may aggregate account activity with a delay.
+
+Logs: `~/Library/Logs/dev.juric.codex-usage/`. After moving the checkout or changing
+the Node/Codex installation, rerun the installer. To stop the background refresh:
+
+```bash
+launchctl bootout gui/$(id -u)/dev.juric.codex-usage
+rm ~/Library/LaunchAgents/dev.juric.codex-usage.plist
+```
+
+Protocol: <https://learn.chatgpt.com/docs/app-server#7-token-usage-chatgpt>
+
 ## ISS Trail Persistence (Cloudflare KV)
 
 The ISS globe trail is stored in Cloudflare KV (shared across visitors, survives cold starts).
