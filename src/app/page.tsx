@@ -53,7 +53,7 @@ export default function Home() {
 
           <article className="featured-project" aria-labelledby="sefaly-title">
             <div className="project-intro" data-reveal>
-              <p className="project-category">Past project <span aria-hidden="true">/</span> Creator</p>
+              <p className="project-category">Prior project <span aria-hidden="true">/</span> Creator</p>
               <h3 id="sefaly-title">Sefaly</h3>
               <p className="project-subtitle">Encrypted cloud storage.</p>
               <div className="project-links">
@@ -93,7 +93,7 @@ export default function Home() {
           </article>
 
           <article className="project-row" aria-labelledby="fxb-title" data-reveal>
-            <div><p className="project-category">Desktop software · 2015–2016</p><h3 id="fxb-title">FXBViewer</h3></div>
+            <div><p className="project-category">Desktop software</p><h3 id="fxb-title">FXBViewer</h3></div>
             <div className="project-row-description"><p>A C++ and Qt utility that parses Sylenth1 preset banks and searches their contents by name, making large preset collections easier to navigate.</p><p className="project-note"><a href="https://sourceforge.net/projects/fxb-viewer/files/stats/timeline" target="_blank" rel="noreferrer">500+ downloads on SourceForge</a></p></div>
             <ExternalLink href="https://github.com/shokace/fxbViewer---WINDOWS">View source</ExternalLink>
           </article>
