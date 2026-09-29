@@ -1,171 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Petar Juric — engineering portfolio
 
-## Getting Started
+Production: <https://juric.dev>. Next.js on Cloudflare Pages (`juricdev2026`).
+See [DEPLOY.md](DEPLOY.md) for the commit, push, build, and direct-upload release flow.
+Pushing to GitHub does not deploy the site.
 
-First, run the development server:
+## Portfolio
 
-```bash
+The homepage is statically rendered and has no live API dependencies. It leads with
+Petar's software engineering contract at Apple, presents Sefaly as previous
+independent work, and highlights selected projects. Apple responsibilities, dates,
+and team details are intentionally limited to information supplied by Petar.
+
+The ISS globe, animated background, activity feed, live visitor dashboard, and audio
+upload demo are retired from the homepage. The legacy modules and API routes remain
+available in the repository; the ISS refresh worker has no scheduled triggers.
+The KV namespace is shared with usage reporting and must not be deleted.
+
+```sh
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage page
 
-## Codex account usage
+The account summaries now live at `/usage`, linked discreetly in the portfolio
+footer. They render in plain side-by-side panels and stack on mobile. This page is
+excluded from search indexing. The homepage does not mount or fetch these tools.
 
-The homepage reads `/api/codex/usage`, which serves an allowlisted account summary
-from Cloudflare KV. `scripts/sync-codex-usage.mjs` reads the signed-in local Codex
-account using the official app-server `account/usage/read` method. This reflects
-Codex account activity, not OpenAI API organization billing. The account summary
-does not provide an input/output breakdown or dollar cost, so the panel shows
-lifetime tokens, peak daily tokens, current streak, and longest turn instead.
-A 16-week heatmap underneath shows daily token counts from the same account
-response. Hover, tap, or focus a day (arrow keys navigate) for its exact count.
-Dates use the service's date buckets without converting to the visitor's timezone;
-future days are blank. Missing history is shown as unavailable, not zero activity.
+### Codex
 
-Prerequisites: Node 20.12+, a current Codex CLI with `account/usage/read`, and an
-authenticated Codex account (`codex login`). The sync uses the existing local
-`.env.local` KV settings: `KVTok`, `CLOUDFLARE_ACCOUNT_ID`, and
-`CLOUDFLARE_KV_NAMESPACE_ID_ISS`. Optionally set
-`CLOUDFLARE_KV_NAMESPACE_ID_CODEX` on both the Mac and Pages to use a separate
-namespace. The key `codex:account-usage:v1` is separate from the ISS trail.
+`/api/codex/usage` returns an allowlisted Cloudflare KV summary. The local sync script
+uses the official app-server `account/usage/read` method and reflects Codex account
+activity, not API organization billing. Only aggregate metrics and daily token
+counts are uploaded; credentials, account identifiers, prompts, and session content
+stay local.
 
-```bash
+Requires Node 20.12+, an authenticated Codex CLI with `account/usage/read`, and local
+`.env.local` settings `KVTok`, `CLOUDFLARE_ACCOUNT_ID`, and
+`CLOUDFLARE_KV_NAMESPACE_ID_ISS`. An optional `CLOUDFLARE_KV_NAMESPACE_ID_CODEX`
+overrides the namespace. The key is `codex:account-usage:v1`.
+
+```sh
 npm run test:codex
-npm run sync:codex -- --dry-run  # inspect only the public summary
-npm run sync:codex              # publish the summary to KV
-npm run sync:codex:install      # install the macOS background refresh
+npm run sync:codex -- --dry-run
+npm run sync:codex
+npm run sync:codex:install
 ```
 
-Install from a permanent checkout. The launch agent runs immediately, at login,
-and every 15 minutes while the Mac is awake. Credentials stay in the local Codex
-login and `.env.local`; only aggregate metrics and daily dates/token counts are
-uploaded, never credentials, account identifiers, prompts, or session contents.
-Failed refreshes retain the last good
-snapshot. The panel polls every minute and marks snapshots over an hour old as
-`STALE`, with their last update time. `SYNCED` indicates snapshot freshness, not
-real-time billing; Codex may aggregate account activity with a delay.
+Install the background sync from this permanent checkout. It runs at login and
+every 15 minutes while the Mac is awake. Logs live in
+`~/Library/Logs/dev.juric.codex-usage/`. The panel polls every minute and marks data
+over an hour old as stale. Provider reporting can lag behind actual activity.
 
-Logs: `~/Library/Logs/dev.juric.codex-usage/`. After moving the checkout or changing
-the Node/Codex installation, rerun the installer. To stop the background refresh:
+### Anthropic
 
-```bash
-launchctl bootout gui/$(id -u)/dev.juric.codex-usage
-rm ~/Library/LaunchAgents/dev.juric.codex-usage.plist
+`/api/anthropic/usage` uses server-only `ANTHROPIC_ADMIN_KEY` and
+`ANTHROPIC_USAGE_START_DATE` settings. It aggregates paginated token and USD cost
+reports and removes organization, workspace, and key identifiers. It reports API
+usage, not a Claude subscription. Unavailable cost stays blank.
+
+Successful reports are fresh for one hour. Expired reports are served immediately
+while Next's `after` keeps the background refresh alive. Concurrent refreshes are
+coalesced per edge instance; failed refreshes back off for a minute. The last good
+snapshot persists at `anthropic:api-usage:v1` in the same KV namespace.
+
+The browser restores a validated public summary from local storage, then fetches
+the endpoint. It polls stale reports after 15 seconds and fresh reports after five
+minutes. Invalid or disabled storage does not prevent network loading.
+
+```sh
+npm run test:anthropic
+# After the Cloudflare build:
+npm run test:anthropic:edge
 ```
 
-Protocol: <https://learn.chatgpt.com/docs/app-server#7-token-usage-chatgpt>
-
-## ISS Trail Persistence (Cloudflare KV)
-
-The ISS globe trail is stored in Cloudflare KV (shared across visitors, survives cold starts).
-
-1. Create a KV namespace:
-
-```bash
-wrangler kv namespace create ISS_TRAIL
-```
-
-2. Add these environment variables in Cloudflare (and `.env.local` for local dev):
-
-- `KVTok` (dedicated KV token for ISS trail only)
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_KV_NAMESPACE_ID_ISS` (the namespace `id` from the create command)
-
-3. Ensure `KVTok` has account-level permission:
-
-- `Workers KV Storage: Edit` (read/write)
-
-If these variables are missing, `/api/iss` still returns live ISS position, but trail persistence is disabled.
-
-## ISS Background Refresh (No Visitor Required)
-
-By default, `/api/iss` only runs when someone loads the site. If you want the trail database to keep updating when nobody is visiting, deploy the cron worker:
-
-```bash
-cd cloudflare/iss-cron
-npx wrangler deploy
-```
-
-This worker calls your production ISS endpoint every minute (`*/1 * * * *`) so KV keeps getting refreshed in the background.
-
-- Worker config: `/Users/ezkie/Repos/juricDev2026/cloudflare/iss-cron/wrangler.toml`
-- Update `ISS_REFRESH_URL` in `wrangler.toml` if needed.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## ISS view and interaction
-
-The globe follows the latest reported position by default. **Explore globe** enables
-mouse/touch rotation; **Follow ISS** restores tracking. Normal page scrolling remains
-available over the globe in follow mode. The path is recorded history (up to 90
-minutes); gaps over eight minutes are not joined.
-
-Rendering pauses outside the viewport and in hidden tabs. Reduced-motion mode uses
-on-demand rendering and removes pulsing/interpolated transitions. Live coordinates
-remain available when WebGL is unavailable. The feed times out after eight seconds,
-retains the last known position on failure, and marks readings over 45 seconds old
-as reconnecting. Run `npm run test:iss` for coordinate, freshness, and trail checks.
-
-## Usage card stack
-
-Codex and Claude share a fixed-height card stack. Hover or keyboard focus reveals
-its next card; click the card background or the labeled swap button to deal it to
-the back. Heatmap cells retain their own mouse, touch and arrow-key interactions.
-Touch devices get a brief peek when the stack enters view. Reduced motion swaps
-instantly, and the rear card is inert and hidden from assistive technology.
-
-The orange Claude card restores `/api/anthropic/usage` using the existing
-`ANTHROPIC_ADMIN_KEY` and `ANTHROPIC_USAGE_START_DATE` server settings. It displays
-Anthropic **API** usage (not the Claude subscription), plus a 16-week orange map.
-The endpoint aggregates all daily pages, strips organization/key identifiers,
-caches successful reports for an hour, and serves the last good report immediately
-while expired data refreshes in the background using Next's `after` request lifetime.
-Concurrent refreshes are coalesced per edge instance, and failed refreshes back off
-for a minute while keeping the previous report visible.
-The last good allowlisted summary also persists in the existing Cloudflare KV
-namespace under `anthropic:api-usage:v1`, so cold starts can reuse it.
-The browser also restores a validated public summary from local storage on repeat
-visits, then checks the endpoint. Stale reports are labeled `STALE` and checked again
-after 15 seconds; fresh reports are checked every five minutes. Storage being disabled
-or corrupt does not prevent network loading. API cost comes from the actual USD cost report; if unavailable it stays blank,
-rather than estimating every model at one price. Credentials never reach the browser.
-
-Run `npm run test:anthropic` to verify aggregation, cost conversion, and cache behavior
-with slow refreshes, concurrent requests, cold starts, and upstream failures.
-After building with `npx @cloudflare/next-on-pages@1`, run
-`npm run test:anthropic:edge` to check background refresh and persistence in the
-actual deployment bundle with mocked services (no credentials or network needed).
-
-## Ambient background
-
-The decorative ASCII flow uses a small cached glyph atlas on a 2D canvas, capped
-at 24 fps on desktop and 18 fps on phones. Mouse movements leave a soft, fading
-character trail; phones use a slow wandering source without intercepting touches.
-The renderer becomes idle when a desktop trail has faded. It pauses while the tab is hidden,
-respects reduced motion, and has a pause control below the content. Static blurred
-gradients remain available when canvas is unsupported. Project links use the
-original compact icon row with descriptions on hover and keyboard focus.
+The edge check exercises the actual deployment bundle with mocked services to
+verify that expired data returns immediately and refresh/persistence finish after
+the response. It does not use credentials or contact upstream services.

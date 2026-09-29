@@ -45,7 +45,7 @@ export default function CodexUsage() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-3 text-[0.78rem] tracking-normal text-muted">
+    <div className="flex flex-1 flex-col gap-3 text-[0.875rem] tracking-normal text-muted">
       {rows.map(([label, value]) => (
         <div key={label} className="flex items-center justify-between gap-2">
           <span>{label}</span>
@@ -58,7 +58,7 @@ export default function CodexUsage() {
       </div>
       {usage && <div className="mt-auto pt-2"><CodexUsageMap dailyUsage={usage.daily_usage} updatedAt={usage.updated_at} /></div>}
       {usage && (
-        <p className="text-[0.6rem] tracking-normal" title="Account totals refresh every 15 minutes while my Mac is awake.">
+        <p className="text-[0.75rem] tracking-normal" title="Account totals refresh every 15 minutes while my Mac is awake.">
           Updated <time dateTime={new Date(usage.updated_at).toISOString()}>{new Date(usage.updated_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time>
         </p>
       )}

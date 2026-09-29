@@ -3,9 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2026-02-23"
 
 [triggers]
-crons = ["*/1 * * * *"]
+# The ISS tracker was retired from the portfolio. Keep manual access available
+# without refreshing an unused trail every minute.
+crons = []
 
 [vars]
 # Set this to your production ISS route if different.
 ISS_REFRESH_URL = "https://juric.dev/api/iss"
-

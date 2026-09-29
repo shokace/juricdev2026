@@ -1,330 +1,103 @@
-import { Suspense } from "react";
-import SiteEffects from "@/components/site-effects";
-import AsciiBackground from "@/components/ascii-background";
-import Globe3D from "@/components/globe-3d";
-import GithubActivity from "@/components/github-activity";
-import IssTelemetry from "@/components/iss-telemetry";
-import UsageDeck from "@/components/usage-deck";
-import WavEquation from "@/components/wav-equation";
-import FafrInfoButton from "@/components/fafr-info-button";
-import {
-  fetchGithubContributionGrid,
-  type GithubContributionGrid,
-} from "@/lib/github";
-import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlanding";
+import Link from "next/link";
 
-const links = [
-  {
-    label: "GitHub",
-    href: "https://github.com/shokace/",
-    icon: "github",
-    description: "Source code and open projects",
-  },
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/in/pjuric/",
-    icon: "linkedin",
-    description: "Work history and experience",
-  },
-];
-
-function HeaderIcon({ icon }: { icon: (typeof links)[number]["icon"] }) {
-  const className = "h-5 w-5 text-[color:var(--text0)] sm:h-5.5 sm:w-5.5";
-
-  switch (icon) {
-    case "github":
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.59 2 12.25c0 4.53 2.87 8.37 6.84 9.72.5.1.66-.22.66-.5 0-.25-.01-.91-.01-1.79-2.78.62-3.37-1.38-3.37-1.38-.46-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .08 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.15-4.56-5.1 0-1.13.39-2.05 1.03-2.78-.1-.26-.45-1.3.1-2.72 0 0 .84-.28 2.75 1.06A9.3 9.3 0 0 1 12 6.8a9.3 9.3 0 0 1 2.5.35c1.9-1.34 2.75-1.06 2.75-1.06.54 1.42.2 2.46.1 2.72.64.73 1.03 1.65 1.03 2.78 0 3.96-2.34 4.83-4.57 5.08.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .28.18.61.67.5A10.27 10.27 0 0 0 22 12.25C22 6.59 17.52 2 12 2Z" />
-        </svg>
-      );
-    case "linkedin":
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-          <path d="M6.94 8.5H3.56V20h3.38V8.5Zm.22-3.56C7.15 3.84 6.28 3 5.26 3S3.38 3.84 3.38 4.94c0 1.07.84 1.94 1.86 1.94h.02c1.03 0 1.9-.87 1.9-1.94ZM20.62 13.01c0-3.53-1.88-5.17-4.39-5.17-2.02 0-2.93 1.13-3.44 1.92V8.5H9.41c.04.83 0 11.5 0 11.5h3.38v-6.42c0-.34.02-.69.12-.93.27-.69.87-1.4 1.9-1.4 1.34 0 1.88 1.04 1.88 2.56V20h3.38v-6.99Z" />
-        </svg>
-      );
-    default:
-      return null;
-  }
+function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return <a className="text-link" href={href} target="_blank" rel="noreferrer">{children}<span aria-hidden="true"> ↗</span></a>;
 }
-
-function formatCompactNumber(value: number) {
-  return new Intl.NumberFormat("en-US", { notation: "compact" }).format(value);
-}
-
-function formatGigabytes(bytes: number) {
-  const gb = bytes / 1_000_000_000;
-  return `${gb.toFixed(2)} GB`;
-}
-
-async function getNeverLandingStats(): Promise<NeverLandingStats | null> {
-  try {
-    return await fetchNeverLandingStats();
-  } catch {
-    return null;
-  }
-}
-
-function getEmptyGithubGrid(user: string, year: number): GithubContributionGrid {
-  return {
-    user,
-    year,
-    minCol: 0,
-    maxCol: 51,
-    cells: [],
-  };
-}
-
-async function getGithubGrid(user: string, year: number): Promise<GithubContributionGrid> {
-  try {
-    return await fetchGithubContributionGrid(user, year);
-  } catch {
-    return getEmptyGithubGrid(user, year);
-  }
-}
-
-function NeverLandingRows({ stats }: { stats: NeverLandingStats | null }) {
-  return (
-    <div className="space-y-3 text-[0.78rem] tracking-normal text-muted">
-      <div className="flex items-center justify-between">
-        <span>Unique Visitors</span>
-        <span className="text-[color:var(--text0)]">
-          {stats ? formatCompactNumber(stats.uniqueVisitors) : "--"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span>Requests</span>
-        <span className="text-[color:var(--text0)]">
-          {stats ? formatCompactNumber(stats.requests) : "--"}
-        </span>
-      </div>
-      <div className="flex items-center justify-between">
-        <span>Edge Data</span>
-        <span className="text-[color:var(--text0)]">
-          {stats ? formatGigabytes(stats.edgeResponseBytes) : "--"}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-async function NeverLandingLive() {
-  const stats = await getNeverLandingStats();
-  return <NeverLandingRows stats={stats} />;
-}
-
-function GithubGridView({ grid }: { grid: GithubContributionGrid }) {
-  const cellMap = new Map(grid.cells.map((cell) => [`${cell.col}-${cell.row}`, cell.level]));
-  const levelColors = [
-    "rgba(255, 255, 255, 0.04)",
-    "rgba(145, 200, 175, 0.22)",
-    "rgba(145, 200, 175, 0.42)",
-    "rgba(145, 200, 175, 0.65)",
-    "rgba(145, 200, 175, 0.9)",
-  ];
-
-  return (
-    <div className="github-calendar" role="region" aria-label="GitHub contribution calendar" tabIndex={0}>
-      <div
-        className="gh-grid grid gap-[3px]"
-        style={{
-          gridTemplateColumns: `repeat(${grid.maxCol - grid.minCol + 1}, minmax(0, 1fr))`,
-        }}
-      >
-        {Array.from({ length: 7 }, (_, row) =>
-          Array.from({ length: grid.maxCol - grid.minCol + 1 }, (_, colIndex) => {
-            const col = colIndex + grid.minCol;
-            const level = Math.min(cellMap.get(`${col}-${row}`) ?? 0, 4);
-            return (
-              <span
-                key={`${col}-${row}`}
-                className={`gh-cell gh-level-${level}`}
-                title={grid.cells.find((cell) => cell.col === col && cell.row === row)?.date}
-                style={{
-                  display: "block",
-                  backgroundColor: levelColors[level],
-                  border: "1px solid rgba(255, 255, 255, 0.04)",
-                }}
-              />
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
-}
-
-async function GithubGridLive({ user, year }: { user: string; year: number }) {
-  const grid = await getGithubGrid(user, year);
-  return <GithubGridView grid={grid} />;
-}
-
-function Panel({
-  title,
-  children,
-  headerRight,
-  className = "",
-}: {
-  title?: React.ReactNode;
-  children: React.ReactNode;
-  headerRight?: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`hud-panel min-w-0 ${className}`}>
-      {title ? (
-        <div className="panel-heading">
-          <h2>{title}</h2>
-          {headerRight}
-        </div>
-      ) : null}
-      {children}
-    </section>
-  );
-}
-
-export const dynamic = "force-dynamic";
-export const runtime = "edge";
 
 export default function Home() {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <div className="site-shell min-h-screen">
-      <SiteEffects />
-      <main className="site-main">
-        <Panel className="profile-hero">
-          <div className="profile-intro">
-            <div>
-              <p className="eyebrow">Profile</p>
-              <h1>Petar Juric<span className="name-period" aria-hidden="true">.</span></h1>
-              <p className="profile-role">Software Engineer</p>
-            </div>
-            <nav className="project-nav" aria-label="Projects and links">
-              <p className="eyebrow">Projects &amp; Links</p>
-              <div className="project-links">
-                {links.map((link) => (
-                  <a key={link.label} href={link.href} className="project-link"
-                    aria-label={`${link.label} — ${link.description}`}
-                    title={link.description} target="_blank" rel="noreferrer">
-                    <HeaderIcon icon={link.icon} />
-                    <span className="project-caption" aria-hidden="true">
-                      <strong>{link.label}</strong><span> · {link.description}</span>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </nav>
+    <div className="portfolio">
+      <a className="skip-link" href="#main">Skip to content</a>
+      <header className="site-header">
+        <a className="wordmark" href="#main" aria-label="Petar Juric, home">juric.dev</a>
+        <nav aria-label="Main navigation">
+          <a href="#work">Work</a>
+          <a href="#about">About</a>
+          <a href="https://www.linkedin.com/in/pjuric/" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
+        </nav>
+      </header>
+
+      <main id="main" tabIndex={-1}>
+        <section className="hero" aria-labelledby="profile-title">
+          <div className="hero-copy">
+            <p className="eyebrow">Software engineer</p>
+            <h1 id="profile-title">Petar Juric<span aria-hidden="true">.</span></h1>
+            <p className="hero-description">Building software across web applications, privacy-focused products, and developer tools.</p>
+            <a className="text-link hero-link" href="#work">View selected work <span aria-hidden="true">↓</span></a>
           </div>
-        </Panel>
-
-        <section className="dashboard-grid mt-5 grid grid-cols-12 items-stretch gap-4" data-dashboard>
-          <div className="col-span-12 lg:col-span-3 flex min-w-0 flex-col gap-4" data-dashboard-column="profile">
-            <Panel title="Detail" className="detail-panel">
-              <div className="space-y-4 text-[0.75rem] tracking-normal text-muted">
-                <div className="flex items-center justify-between">
-                  <span>Location</span>
-                  <span className="text-[color:var(--text0)]">USA</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Availability</span>
-                  <span className="text-[color:#f59e0b]">Contracted</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Current Field</span>
-                  <span className="whitespace-nowrap text-[color:var(--text0)]">AI / Big Data</span>
-                </div>
-              </div>
-            </Panel>
-
-            <Panel title="About Me" className="about-panel lg:flex-1">
-              <p className="about-copy">
-                I build satellite trackers, real-time data visualizations, and signal-processing tools.
-                My work focuses on machine learning and performance-driven systems.
-              </p>
-            </Panel>
-
-            <Panel
-              title={
-                <a
-                  href="https://neverlanding.page"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-[color:var(--text0)]"
-                >
-                  <span>Neverlanding.page</span>{" "}<span>Weekly Stats</span>
-                </a>
-              }
-              className="neverlanding-panel"
-              headerRight={
-                <a className="website-link" href="https://neverlanding.page" target="_blank" rel="noreferrer"
-                  aria-label="Visit Neverlanding.page" title="Visit Neverlanding.page">
-                  <svg viewBox="0 0 32 32" width="30" height="30" fill="none" aria-hidden="true">
-                    <path d="M3.5 10.5a13 13 0 0 1 25 0M3.5 21.5a13 13 0 0 0 25 0M11 10c1-9 9-9 10 0M11 22c1 9 9 9 10 0M6 7.5h20M6 24.5h20"
-                      stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                    <text x="16" y="19" textAnchor="middle" fill="currentColor" fontFamily="monospace" fontWeight="600" fontSize="8">www</text>
-                  </svg>
-                </a>
-              }
-            >
-              <Suspense fallback={<NeverLandingRows stats={null} />}>
-                <NeverLandingLive />
-              </Suspense>
-            </Panel>
-          </div>
-
-          <div className="col-span-12 lg:col-span-6 flex min-w-0 flex-col gap-4" data-dashboard-column="globe">
-            <Panel title="ISS tracking · live orbital telemetry" className="tracker-panel flex flex-1 flex-col">
-              <div className="flex w-full flex-1 flex-col items-center justify-center gap-2 overflow-visible">
-                <Globe3D />
-              </div>
-              <div>
-                <IssTelemetry />
-              </div>
-            </Panel>
-
-          </div>
-
-          <div className="col-span-12 lg:col-span-3 flex min-w-0 flex-col gap-4" data-dashboard-column="activity">
-            <Panel title="Contributions">
-              <div className="lg:max-h-32 lg:overflow-y-auto lg:pr-1 [scrollbar-width:thin]" role="region" aria-label="Recent GitHub contributions">
-                <GithubActivity />
-              </div>
-            </Panel>
-
-            <UsageDeck />
-
-          </div>
+          <aside className="current-role" aria-label="Current role">
+            <p className="eyebrow">Currently</p>
+            <p className="company-name">Apple</p>
+            <p>Software engineering</p>
+            <span className="role-type">Contract</span>
+            <p className="role-location">Based in the United States</p>
+          </aside>
         </section>
 
-        <div className="mt-4">
-          <Panel
-            title={
-              <a
-                href="https://github.com/shokace/W2F"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[color:var(--text0)]"
-              >
-                FAFR
-              </a>
-            }
-            headerRight={<FafrInfoButton />}
-          >
-            <WavEquation />
-          </Panel>
-        </div>
+        <section id="work" className="work-section" aria-labelledby="work-title">
+          <div className="section-heading">
+            <p className="eyebrow">Selected work</p>
+            <h2 id="work-title">From an idea to a working product.</h2>
+          </div>
 
-        <div className="mt-4">
-          <Panel title={`GitHub Activity ${currentYear}`}>
-            <Suspense fallback={<GithubGridView grid={getEmptyGithubGrid("shokace", currentYear)} />}>
-              <GithubGridLive user="shokace" year={currentYear} />
-            </Suspense>
-          </Panel>
-        </div>
+          <article className="featured-project" aria-labelledby="sefaly-title">
+            <div className="project-intro">
+              <p className="project-category">Past project <span aria-hidden="true">/</span> Creator</p>
+              <h3 id="sefaly-title">Sefaly</h3>
+              <p className="project-subtitle">Encrypted cloud storage.</p>
+              <div className="project-links">
+                <ExternalLink href="https://www.sefaly.com">View product</ExternalLink>
+                <ExternalLink href="https://github.com/shokace/sefaly-cli">CLI source</ExternalLink>
+              </div>
+            </div>
+            <div className="project-story">
+              <p>I created Sefaly, an end-to-end encrypted cloud storage platform, and its companion command-line client.</p>
+              <p>The product brought file management and secure sharing into a web application, with encryption performed on the user’s device before upload. The CLI extended those workflows to the terminal.</p>
+              <p className="project-status">Sefaly is part of my previous independent work. I’m no longer actively developing the project.</p>
+            </div>
+            <div className="project-details" aria-label="Sefaly engineering details">
+              <div><span className="detail-number" aria-hidden="true">01</span><div><h4>Encrypt on the device</h4><p>Client-side file encryption with AES-256-GCM.</p></div></div>
+              <div><span className="detail-number" aria-hidden="true">02</span><div><h4>Protect the keys</h4><p>ML-KEM key wrapping; encrypted files in storage.</p></div></div>
+              <div><span className="detail-number" aria-hidden="true">03</span><div><h4>Work from the terminal</h4><p>Upload, download, organize, and share through the CLI.</p></div></div>
+            </div>
+          </article>
+
+          <article className="project-row" aria-labelledby="neverlanding-title">
+            <div><p className="project-category">Web application</p><h3 id="neverlanding-title">Neverlanding.page</h3></div>
+            <div className="project-row-description"><p>A web discovery application for exploring independent websites, saving favorites, and keeping a personal browsing history.</p><p className="project-note">Discovery, accounts, and a catalog spanning one million sites.</p></div>
+            <ExternalLink href="https://neverlanding.page">View project</ExternalLink>
+          </article>
+
+          <article className="project-row" aria-labelledby="fxb-title">
+            <div><p className="project-category">Desktop software · 2015–2016</p><h3 id="fxb-title">FXBViewer</h3></div>
+            <div className="project-row-description"><p>A C++ and Qt utility that parses Sylenth1 preset banks and searches their contents by name, making large preset collections easier to navigate.</p><p className="project-note"><a href="https://sourceforge.net/projects/fxb-viewer/files/stats/timeline" target="_blank" rel="noreferrer">500+ downloads on SourceForge</a></p></div>
+            <ExternalLink href="https://github.com/shokace/fxbViewer---WINDOWS">View source</ExternalLink>
+          </article>
+
+          <article className="project-row" aria-labelledby="starlink-title">
+            <div><p className="project-category">Data visualization</p><h3 id="starlink-title">Starlink Tracker</h3></div>
+            <div className="project-row-description"><p>An interactive constellation viewer that turns public orbital data into estimated satellite positions on a 3D globe, with search, filtering, and 24-hour forecast playback.</p><p className="project-note">Meteor, React, MongoDB, CesiumJS, and satellite.js.</p></div>
+            <ExternalLink href="https://github.com/shokace/StarlinkTracker">View source</ExternalLink>
+          </article>
+        </section>
+
+        <section id="about" className="about-section" aria-labelledby="about-title">
+          <div><p className="eyebrow">About</p><h2 id="about-title">Software, end to end.</h2></div>
+          <div className="about-text">
+            <p>I’m a software engineer based in the United States, currently contracted at Apple.</p>
+            <p>My independent work spans desktop utilities, web applications, and data visualization. With Sefaly, I built encrypted storage workflows for both the browser and the command line.</p>
+            <div className="about-links">
+              <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
+              <ExternalLink href="https://www.linkedin.com/in/pjuric/">LinkedIn</ExternalLink>
+            </div>
+          </div>
+        </section>
       </main>
-      <AsciiBackground />
+
+      <footer className="site-footer">
+        <p>Petar Juric <span aria-hidden="true">/</span> Software engineer</p>
+        <div><Link href="/usage">Usage</Link><a href="#main">Back to top <span aria-hidden="true">↑</span></a></div>
+      </footer>
     </div>
   );
 }

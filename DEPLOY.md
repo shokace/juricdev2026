@@ -9,7 +9,8 @@ output. Push and deploy are two separate steps.
 ## Full release
 
 ```bash
-# 1. sanity build (typecheck + lint via next)
+# 1. lint and sanity build (Next includes typechecking)
+npm run lint
 npm run build
 
 # 2. commit + push
@@ -57,8 +58,12 @@ deploy above:
 cd cloudflare/iss-cron && npx wrangler deploy
 ```
 
-It hits `ISS_REFRESH_URL` (`https://juric.dev/api/iss`) every minute so the KV trail keeps
-updating with no visitors. Runtime env vars (`KVTok`, `CLOUDFLARE_ACCOUNT_ID`,
+The ISS tracker has been retired from the portfolio, and `crons = []` disables its
+scheduled refresh. Deploy the Worker after this configuration changes to apply the
+empty schedule. The manual refresh endpoint remains available. Keep the shared KV
+namespace: the usage summaries also use it.
+
+Runtime env vars (`KVTok`, `CLOUDFLARE_ACCOUNT_ID`,
 `CLOUDFLARE_KV_NAMESPACE_ID_ISS`, the Anthropic/OpenAI admin keys) live in the Cloudflare
 dashboard for the Pages project, not in the repo — see README for the KV setup.
 

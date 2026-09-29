@@ -27,15 +27,15 @@ export default function CodexUsageMap({ dailyUsage, updatedAt, provider = "Codex
 
   return (
     <div className="codex-map border-t border-[color:var(--border)] pt-4">
-      <div className="mb-3 flex items-center justify-between gap-2 text-[0.6rem] tracking-normal">
+      <div className="mb-3 flex items-center justify-between gap-2 text-[0.75rem] tracking-normal">
         <h3 className="text-[color:var(--text0)]">Usage Map</h3>
         <span className="text-faint">16 weeks</span>
       </div>
       {dailyUsage === null ? (
-        <p className="py-6 text-[0.6rem] tracking-[0.08em] text-faint">Daily activity unavailable.</p>
+        <p className="py-6 text-[0.75rem] tracking-[0.08em] text-faint">Daily activity unavailable.</p>
       ) : (
         <>
-          <div className="mb-1.5 grid grid-cols-16 gap-[3px] text-[0.5rem] tracking-normal text-faint" aria-hidden="true">
+          <div className="mb-1.5 grid grid-cols-16 gap-[3px] text-[0.75rem] tracking-normal text-faint" aria-hidden="true">
             {months.map((month, index) => <span key={index} className="overflow-visible">{month}</span>)}
           </div>
           <div className="grid grid-flow-col grid-cols-16 grid-rows-7 gap-[3px]" role="group" aria-label={`${provider} daily token usage over the last 16 weeks. Use arrow keys to explore days.`}>
@@ -64,13 +64,13 @@ export default function CodexUsageMap({ dailyUsage, updatedAt, provider = "Codex
               />
             ))}
           </div>
-          <div className="mt-2 flex items-center justify-between gap-2 text-[0.5rem] tracking-[0.08em] text-faint">
+          <div className="mt-2 flex items-center justify-between gap-2 text-[0.75rem] tracking-[0.08em] text-faint">
             <span>Daily tokens</span>
-            <span className="flex items-center gap-1" aria-label="Darker cells mean fewer tokens; brighter cells mean more tokens.">
+            <span className="flex items-center gap-1" aria-label="Lighter cells mean fewer tokens; darker cells mean more tokens.">
               Less {[0, 1, 2, 3, 4].map((level) => <span key={level} className={`gh-level-${level} h-2 w-2 rounded-[1px]`} aria-hidden="true" />)} More
             </span>
           </div>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[0.55rem] tracking-[0.06em]" aria-live="polite" aria-atomic="true">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[0.75rem] tracking-[0.06em]" aria-live="polite" aria-atomic="true">
             <span className="text-faint">{dateLabel}</span>
             <span className="text-[color:var(--accent-green)]">{number.format(active.tokens)} tokens</span>
           </div>

@@ -67,11 +67,11 @@ export default function AnthropicUsage() {
     ["API Cost", usage?.total_cost_usd == null ? "--" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(usage.total_cost_usd)],
   ];
   return (
-    <div className="flex flex-1 flex-col gap-3 text-[0.78rem] tracking-normal text-muted">
+    <div className="flex flex-1 flex-col gap-3 text-[0.875rem] tracking-normal text-muted">
       {rows.map(([label, value]) => <div key={label} className="flex items-center justify-between gap-2"><span>{label}</span><span className="text-[color:var(--text0)] tabular-nums tracking-normal">{value}</span></div>)}
       <div className="flex items-center justify-between" role="status"><span>Status</span><span className="text-[color:var(--accent-green)]">{status}</span></div>
       <div className="mt-auto pt-2"><CodexUsageMap dailyUsage={usage?.daily_usage ?? null} updatedAt={usage?.updated_at ?? Date.now()} provider="Claude" /></div>
-      <p className="text-[0.6rem] tracking-normal">{usage ? <>API usage since <time dateTime={usage.since}>{usage.since}</time></> : "Anthropic API usage"}</p>
+      <p className="text-[0.75rem] tracking-normal">{usage ? <>API usage since <time dateTime={usage.since}>{usage.since}</time></> : "Anthropic API usage"}</p>
     </div>
   );
 }
