@@ -13,20 +13,23 @@ export default function Home() {
       <header className="site-header">
         <a className="wordmark" href="#main" aria-label="Petar Juric, home">juric.dev</a>
         <nav aria-label="Main navigation">
-          <a href="#work">Work</a>
           <a href="#about">About</a>
+          <a href="#work">Projects</a>
           <a href="https://www.linkedin.com/in/pjuric/" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
         </nav>
       </header>
 
       <main id="main" tabIndex={-1}>
-        <section className="hero" aria-labelledby="profile-title">
+        <section id="about" className="hero" aria-labelledby="profile-title">
           <div className="hero-copy">
             <p className="eyebrow">Software engineer</p>
             <h1 id="profile-title">Petar Juric<span aria-hidden="true">.</span></h1>
-            <p className="hero-description">I build tools for finding, understanding, and protecting information.</p>
-            <p className="hero-context">From a desktop utility to encrypted cloud storage—and now, software engineering on contract at Apple.</p>
-            <a className="text-link hero-link" href="#work">View selected work <span aria-hidden="true">↓</span></a>
+            <p className="hero-description">I’m a software engineer with experience at Ericsson, currently working on contract at Apple.</p>
+            <p className="hero-context">I began experimenting with computers as a child. After working as a music producer, I moved into software engineering. My independent work includes desktop applications, web products, and encrypted cloud storage.</p>
+            <div className="hero-actions">
+              <a className="text-link hero-link" href="#work">View projects <span aria-hidden="true">↓</span></a>
+              <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
+            </div>
           </div>
           <div className="hero-profile">
             <Image className="profile-portrait" src="/images/petar-juric.png" alt="Petar Juric" width={800} height={800} preload unoptimized />
@@ -42,8 +45,7 @@ export default function Home() {
 
         <section id="work" className="work-section" aria-labelledby="work-title">
           <div className="section-heading" data-reveal>
-            <p className="eyebrow"><span className="chapter-number">01</span> Selected work</p>
-            <h2 id="work-title">Making privacy part of the product.</h2>
+            <h2 id="work-title">Highlighted project</h2>
           </div>
 
           <article className="featured-project" aria-labelledby="sefaly-title">
@@ -72,42 +74,28 @@ export default function Home() {
 
         <section className="projects-section" aria-labelledby="projects-title">
           <div className="section-heading" data-reveal>
-            <p className="eyebrow"><span className="chapter-number">02</span> More work</p>
-            <h2 id="projects-title">A decade of building useful tools.</h2>
+            <h2 id="projects-title">Other projects</h2>
           </div>
-          <p className="section-introduction" data-reveal>FXBViewer began with a practical problem: finding a preset in a large collection. Other projects took that idea of exploration further—from discovering websites to making satellite orbits visible.</p>
 
           <article className="project-row" aria-labelledby="fxb-title" data-reveal>
-            <div><p className="project-category">Find <span aria-hidden="true">/</span> Desktop software · 2015–2016</p><h3 id="fxb-title">FXBViewer</h3></div>
+            <div><p className="project-category">Desktop software · 2015–2016</p><h3 id="fxb-title">FXBViewer</h3></div>
             <div className="project-row-description"><p>A C++ and Qt utility that parses Sylenth1 preset banks and searches their contents by name, making large preset collections easier to navigate.</p><p className="project-note"><a href="https://sourceforge.net/projects/fxb-viewer/files/stats/timeline" target="_blank" rel="noreferrer">500+ downloads on SourceForge</a></p></div>
             <ExternalLink href="https://github.com/shokace/fxbViewer---WINDOWS">View source</ExternalLink>
           </article>
 
           <article className="project-row" aria-labelledby="neverlanding-title" data-reveal>
-            <div><p className="project-category">Explore <span aria-hidden="true">/</span> Web application</p><h3 id="neverlanding-title">Neverlanding.page</h3></div>
+            <div><p className="project-category">Web application</p><h3 id="neverlanding-title">Neverlanding.page</h3></div>
             <div className="project-row-description"><p>A web discovery application for exploring independent websites, saving favorites, and keeping a personal browsing history.</p><p className="project-note">Discovery, accounts, and a catalog spanning one million sites.</p></div>
             <ExternalLink href="https://neverlanding.page">View project</ExternalLink>
           </article>
 
           <article className="project-row" aria-labelledby="starlink-title" data-reveal>
-            <div><p className="project-category">Understand <span aria-hidden="true">/</span> Data visualization</p><h3 id="starlink-title">Starlink Tracker</h3></div>
+            <div><p className="project-category">Data visualization</p><h3 id="starlink-title">Starlink Tracker</h3></div>
             <div className="project-row-description"><p>An interactive constellation viewer that turns public orbital data into estimated satellite positions on a 3D globe, with search, filtering, and 24-hour forecast playback.</p><p className="project-note">Meteor, React, MongoDB, CesiumJS, and satellite.js.</p></div>
             <ExternalLink href="https://github.com/shokace/StarlinkTracker">View source</ExternalLink>
           </article>
         </section>
 
-        <section id="about" className="about-section" aria-labelledby="about-title">
-          <div data-reveal><p className="eyebrow"><span className="chapter-number">03</span> About</p><h2 id="about-title">Connecting the system<br />to the person using it.</h2></div>
-          <div className="about-text" data-reveal>
-            <p>I’m a software engineer based in the United States, currently contracted at Apple.</p>
-            <p>Across my independent work, the common thread is making complex information useful: searchable presets, discoverable websites, understandable orbits, and files that stay private.</p>
-            <p>That work spans the interface and the systems behind it—from desktop applications and data pipelines to browser encryption and command-line tools.</p>
-            <div className="about-links">
-              <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
-              <ExternalLink href="https://www.linkedin.com/in/pjuric/">LinkedIn</ExternalLink>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="site-footer">

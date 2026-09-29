@@ -6,13 +6,12 @@ Pushing to GitHub does not deploy the site.
 
 ## Portfolio
 
-The homepage is statically rendered and has no live API dependencies. It leads with
-Petar's software engineering contract at Apple, presents Sefaly as previous
-independent work, and highlights selected projects. Apple responsibilities, dates,
-and team details are intentionally limited to information supplied by Petar.
-The narrative connects finding information (FXBViewer), exploration
-(Neverlanding.page), visualization (Starlink Tracker), and privacy (Sefaly).
-Petar's supplied headshot is hosted locally with explicit dimensions.
+The homepage is statically rendered and has no live API dependencies. The hero is
+Petar's bio: childhood interest in computers, music production, software work at
+Ericsson, and his current Apple contract. Below it, Sefaly is the highlighted
+project, followed by FXBViewer, Neverlanding.page, and Starlink Tracker under
+Other projects. Employment details are limited to information supplied by Petar.
+His headshot is hosted locally with explicit dimensions.
 
 Motion is progressive enhancement: a short hero entrance, one-time section
 reveals, and hover/focus accents. Reduced-motion preferences disable animation,

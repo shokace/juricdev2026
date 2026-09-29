@@ -11,7 +11,7 @@ const plexSans = IBM_Plex_Sans({ variable: "--font-plex-sans", subsets: ["latin"
 
 export const metadata: Metadata = {
   title: "Petar Juric | Software Engineer",
-  description: "Petar Juric is a software engineer currently contracted at Apple. Previously, he created Sefaly, an encrypted cloud storage platform and CLI.",
+  description: "Petar Juric is a software engineer with experience at Ericsson, currently contracted at Apple. Explore Sefaly and other independent projects.",
   metadataBase: new URL("https://juric.dev"),
   alternates: { canonical: "/" },
   openGraph: {

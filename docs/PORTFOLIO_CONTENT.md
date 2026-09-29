@@ -10,6 +10,10 @@ current client work. Do not infer Apple team, duties, seniority, or employment d
 - **Apple:** Petar directly stated that he is currently contracted at Apple doing
   software. The portfolio explicitly says `Contract` rather than implying direct
   employment.
+- **Background:** Petar stated that he started tinkering with computers as a child,
+  worked as a music producer, and moved into software work at Ericsson and now
+  Apple. He specifically requested this background in the hero bio, superseding
+  the earlier request to omit music references. No titles, teams, or dates are inferred.
 - **Sefaly:** Petar stated that he made Sefaly and is no longer working on it.
   Product details come from <https://www.sefaly.com> and the public CLI repository,
   <https://github.com/shokace/sefaly-cli>. These document client-side AES-256-GCM,
