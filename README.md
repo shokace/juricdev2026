@@ -10,6 +10,13 @@ The homepage is statically rendered and has no live API dependencies. It leads w
 Petar's software engineering contract at Apple, presents Sefaly as previous
 independent work, and highlights selected projects. Apple responsibilities, dates,
 and team details are intentionally limited to information supplied by Petar.
+The narrative connects finding information (FXBViewer), exploration
+(Neverlanding.page), visualization (Starlink Tracker), and privacy (Sefaly).
+Petar's supplied headshot is hosted locally with explicit dimensions.
+
+Motion is progressive enhancement: a short hero entrance, one-time section
+reveals, and hover/focus accents. Reduced-motion preferences disable animation,
+and all content remains readable without JavaScript and when printing.
 
 The ISS globe, animated background, activity feed, live visitor dashboard, and audio
 upload demo are retired from the homepage. The legacy modules and API routes remain

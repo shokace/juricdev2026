@@ -3,6 +3,10 @@
 Reviewed 2026-09-28. Keep project claims factual and distinguish personal work from
 current client work. Do not infer Apple team, duties, seniority, or employment dates.
 
+- **Headshot:** Petar supplied `1790225643704.png` as his LinkedIn headshot on
+  2026-09-28. The original 800 × 800 PNG is served locally at
+  `/images/petar-juric.png`, without image edits or a dependency on LinkedIn's CDN.
+
 - **Apple:** Petar directly stated that he is currently contracted at Apple doing
   software. The portfolio explicitly says `Contract` rather than implying direct
   employment.
