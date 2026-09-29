@@ -7,8 +7,8 @@ Pushing to GitHub does not deploy the site.
 ## Portfolio
 
 The homepage is statically rendered and has no live API dependencies. The hero is
-Petar's bio: childhood interest in computers, music production, software work at
-Ericsson, and his current Apple contract. Below it, Sefaly is the highlighted
+Petar's engineering bio: data visualization, large-scale data pipelines across
+teams at Apple (contract), and prior RTOS work at Ericsson. Below it, Sefaly is the highlighted
 project, followed by FXBViewer, Neverlanding.page, and Starlink Tracker under
 Other projects. Employment details are limited to information supplied by Petar.
 His headshot is hosted locally with explicit dimensions.

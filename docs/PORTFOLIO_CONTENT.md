@@ -7,13 +7,17 @@ current client work. Do not infer Apple team, duties, seniority, or employment d
   2026-09-28. The original 800 × 800 PNG is served locally at
   `/images/petar-juric.png`, without image edits or a dependency on LinkedIn's CDN.
 
-- **Apple:** Petar directly stated that he is currently contracted at Apple doing
-  software. The portfolio explicitly says `Contract` rather than implying direct
-  employment.
-- **Background:** Petar stated that he started tinkering with computers as a child,
-  worked as a music producer, and moved into software work at Ericsson and now
-  Apple. He specifically requested this background in the hero bio, superseding
-  the earlier request to omit music references. No titles, teams, or dates are inferred.
+- **Specialization:** Petar directly described data visualization as his specialty,
+  RTOS work at Ericsson, and current big-data/pipeline work connecting multiple
+  Apple teams across disciplines. The bio uses these details without inventing
+  technology stacks, team names, scale metrics, seniority, or dates. His Apple
+  role remains explicitly a contract.
+- **Bio direction:** Lead with engineering specialties and concrete work. Exclude
+  childhood and music-production background, per Petar's latest direction.
+- **Editorial comparison:** Reviewed <https://www.visualcinnamon.com/about/>,
+  <https://bost.ocks.org/mike/>, and <https://www.ghulam-ali.com/> for how peers
+  present a specialty and support it with specific work. These informed structure
+  only; all claims about Petar come from him and his project sources below.
 - **Sefaly:** Petar stated that he made Sefaly and is no longer working on it.
   Product details come from <https://www.sefaly.com> and the public CLI repository,
   <https://github.com/shokace/sefaly-cli>. These document client-side AES-256-GCM,

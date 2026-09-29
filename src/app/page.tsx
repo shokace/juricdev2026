@@ -24,8 +24,8 @@ export default function Home() {
           <div className="hero-copy">
             <p className="eyebrow">Software engineer</p>
             <h1 id="profile-title">Petar Juric<span aria-hidden="true">.</span></h1>
-            <p className="hero-description">I’m a software engineer with experience at Ericsson, currently working on contract at Apple.</p>
-            <p className="hero-context">I began experimenting with computers as a child. After working as a music producer, I moved into software engineering. My independent work includes desktop applications, web products, and encrypted cloud storage.</p>
+            <p className="hero-description">I’m a software engineer specializing in data visualization, large-scale data pipelines, and real-time systems.</p>
+            <p className="hero-context">Currently contracted at Apple, I build data pipelines connecting teams across engineering disciplines. Previously, I worked on real-time operating systems (RTOS) at Ericsson. My focus is making complex datasets clear and usable through interactive visualization.</p>
             <div className="hero-actions">
               <a className="text-link hero-link" href="#work">View projects <span aria-hidden="true">↓</span></a>
               <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
