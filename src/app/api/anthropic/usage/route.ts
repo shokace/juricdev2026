@@ -1,12 +1,10 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { ANTHROPIC_USAGE_KEY, normalizeAnthropicSnapshot, summarizeAnthropicCost, summarizeAnthropicUsage } from "@/lib/anthropic-usage.mjs";
+import { createAnthropicUsageCache } from "@/lib/anthropic-usage-cache.mjs";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 type Summary = Omit<ReturnType<typeof summarizeAnthropicUsage>, "total_cost_usd"> & { total_cost_usd: number | null };
-let cached: Summary | null = null;
-let pending: Promise<Summary> | null = null;
-const TTL = 60 * 60 * 1000;
 
 function storage() {
   const token = process.env.KVTok ?? process.env.CLOUDFLARE_KV_API_TOKEN ?? process.env.CLOUDFLARE_API_TOKEN;
@@ -55,36 +53,31 @@ async function report(path: string, key: string, start: string, end: string, sig
   throw new Error("Report exceeds page limit");
 }
 
-export async function GET() {
+async function refreshSummary(): Promise<Summary> {
   const now = Date.now();
-  const reply = (summary: Summary, stale = false) => NextResponse.json({ ...summary, stale }, {
-    headers: { "Cache-Control": `public, max-age=60, s-maxage=${stale ? 60 : 3600}` },
-  });
-  if (cached && now - cached.updated_at < TTL) return reply(cached);
-  const saved = await readSaved();
-  if (saved && (!cached || saved.updated_at > cached.updated_at)) cached = saved;
-  if (cached && now - cached.updated_at < TTL) return reply(cached);
   const key = process.env.ANTHROPIC_ADMIN_KEY;
   const date = Date.parse(process.env.ANTHROPIC_USAGE_START_DATE ?? "");
-  if (!key || !Number.isFinite(date) || date >= now) {
-    if (cached) return reply(cached, true);
-    return NextResponse.json({ error: "Anthropic usage is not configured." }, { status: 503 });
+  if (!key || !Number.isFinite(date) || date >= now) throw new Error("Anthropic usage is not configured.");
+  const start = new Date(date).toISOString(), end = new Date(now).toISOString();
+  const signal = AbortSignal.timeout(18_000);
+  const [usage, cost] = await Promise.all([
+    report("usage_report/messages", key, start, end, signal),
+    report("cost_report", key, start, end, signal).then(summarizeAnthropicCost).catch(() => null),
+  ]);
+  return { ...summarizeAnthropicUsage(usage, now, start.slice(0, 10)), total_cost_usd: cost };
+}
+
+const getUsage = createAnthropicUsageCache({ readSaved, refresh: refreshSummary, saveSummary });
+
+export async function GET() {
+  const result = await getUsage((task: Promise<unknown>) => after(task));
+  if (!result) {
+    return NextResponse.json({ error: "Anthropic usage is temporarily unavailable." }, {
+      status: 503, headers: { "Cache-Control": "no-store" },
+    });
   }
-  try {
-    if (!pending) pending = (async () => {
-      const start = new Date(date).toISOString(), end = new Date(now).toISOString();
-      const signal = AbortSignal.timeout(18_000);
-      const [usage, cost] = await Promise.all([
-        report("usage_report/messages", key, start, end, signal),
-        report("cost_report", key, start, end, signal).then(summarizeAnthropicCost).catch(() => null),
-      ]);
-      return { ...summarizeAnthropicUsage(usage, now, start.slice(0, 10)), total_cost_usd: cost };
-    })().finally(() => { pending = null; });
-    cached = await pending;
-    await saveSummary(cached);
-    return reply(cached);
-  } catch {
-    if (cached) return reply(cached, true);
-    return NextResponse.json({ error: "Anthropic usage is temporarily unavailable." }, { status: 503 });
-  }
+  return NextResponse.json({ ...result.summary, stale: result.stale }, {
+    // Short caching lets clients pick up the completed background refresh promptly.
+    headers: { "Cache-Control": `public, max-age=${result.stale ? 0 : 60}, s-maxage=60` },
+  });
 }

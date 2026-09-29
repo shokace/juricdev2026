@@ -142,13 +142,23 @@ The orange Claude card restores `/api/anthropic/usage` using the existing
 `ANTHROPIC_ADMIN_KEY` and `ANTHROPIC_USAGE_START_DATE` server settings. It displays
 Anthropic **API** usage (not the Claude subscription), plus a 16-week orange map.
 The endpoint aggregates all daily pages, strips organization/key identifiers,
-caches successful reports for an hour, and retains stale data on transient errors.
+caches successful reports for an hour, and serves the last good report immediately
+while expired data refreshes in the background using Next's `after` request lifetime.
+Concurrent refreshes are coalesced per edge instance, and failed refreshes back off
+for a minute while keeping the previous report visible.
 The last good allowlisted summary also persists in the existing Cloudflare KV
 namespace under `anthropic:api-usage:v1`, so cold starts can reuse it.
-API cost comes from the actual USD cost report; if unavailable it stays blank,
+The browser also restores a validated public summary from local storage on repeat
+visits, then checks the endpoint. Stale reports are labeled `STALE` and checked again
+after 15 seconds; fresh reports are checked every five minutes. Storage being disabled
+or corrupt does not prevent network loading. API cost comes from the actual USD cost report; if unavailable it stays blank,
 rather than estimating every model at one price. Credentials never reach the browser.
 
-Run `npm run test:anthropic` to verify aggregation and the cents-to-dollars conversion.
+Run `npm run test:anthropic` to verify aggregation, cost conversion, and cache behavior
+with slow refreshes, concurrent requests, cold starts, and upstream failures.
+After building with `npx @cloudflare/next-on-pages@1`, run
+`npm run test:anthropic:edge` to check background refresh and persistence in the
+actual deployment bundle with mocked services (no credentials or network needed).
 
 ## Ambient background
 

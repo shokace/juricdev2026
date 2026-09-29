@@ -11,7 +11,8 @@
     "sync:codex": "node scripts/sync-codex-usage.mjs",
     "sync:codex:install": "node scripts/install-codex-sync.mjs",
     "test:iss": "node --test scripts/iss-data.test.mjs",
-    "test:anthropic": "node --test scripts/anthropic-usage.test.mjs"
+    "test:anthropic": "node --test scripts/anthropic-usage.test.mjs",
+    "test:anthropic:edge": "node scripts/anthropic-edge.test.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.5.0",

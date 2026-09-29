@@ -15,18 +15,6 @@ import { fetchNeverLandingStats, type NeverLandingStats } from "@/lib/neverlandi
 
 const links = [
   {
-    label: "Sefaly",
-    href: "https://www.sefaly.com",
-    icon: "sefaly",
-    description: "Quantum-safe encrypted cloud storage",
-  },
-  {
-    label: "Vila Nena",
-    href: "https://vilanena.com/",
-    icon: "home",
-    description: "Our villa in Croatia — book a stay",
-  },
-  {
     label: "GitHub",
     href: "https://github.com/shokace/",
     icon: "github",
@@ -38,58 +26,12 @@ const links = [
     icon: "linkedin",
     description: "Work history and experience",
   },
-  {
-    label: "X / Twitter",
-    href: "https://x.com/Ezkie_Music",
-    icon: "x",
-    description: "Posts and short updates",
-  },
-  {
-    label: "Music",
-    href: "https://linktr.ee/ezkie",
-    icon: "music",
-    description: "Every release and streaming link",
-  },
 ];
 
 function HeaderIcon({ icon }: { icon: (typeof links)[number]["icon"] }) {
   const className = "h-5 w-5 text-[color:var(--text0)] sm:h-5.5 sm:w-5.5";
 
   switch (icon) {
-    case "sefaly":
-      return (
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className={className}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 2 4 7v10l8 5 8-5V7l-8-5Z" />
-          <path d="M12 22V12" />
-          <path d="m20 7-8 5-8-5" />
-        </svg>
-      );
-    case "home":
-      return (
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className={className}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M3.5 10.6 12 3.5l8.5 7.1" />
-          <path d="M5.6 9.6V20h12.8V9.6" />
-          <path d="M9.9 20v-5.4h4.2V20" />
-        </svg>
-      );
     case "github":
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
@@ -100,18 +42,6 @@ function HeaderIcon({ icon }: { icon: (typeof links)[number]["icon"] }) {
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
           <path d="M6.94 8.5H3.56V20h3.38V8.5Zm.22-3.56C7.15 3.84 6.28 3 5.26 3S3.38 3.84 3.38 4.94c0 1.07.84 1.94 1.86 1.94h.02c1.03 0 1.9-.87 1.9-1.94ZM20.62 13.01c0-3.53-1.88-5.17-4.39-5.17-2.02 0-2.93 1.13-3.44 1.92V8.5H9.41c.04.83 0 11.5 0 11.5h3.38v-6.42c0-.34.02-.69.12-.93.27-.69.87-1.4 1.9-1.4 1.34 0 1.88 1.04 1.88 2.56V20h3.38v-6.99Z" />
-        </svg>
-      );
-    case "x":
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-          <path d="M18.9 2H22l-6.78 7.75L23.2 22h-6.27l-4.9-7.4L5.56 22H2.44l7.25-8.29L1.98 2h6.43l4.42 6.76L18.9 2Zm-1.1 18h1.74L7.46 3.9H5.59L17.8 20Z" />
-        </svg>
-      );
-    case "music":
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-          <path d="M8.8 15.8c-1.95 0-3.4 1.07-3.4 2.55C5.4 19.89 6.85 21 8.8 21s3.4-1.11 3.4-2.65V7.55l6.3-1.7v8.05c-.54-.3-1.2-.45-1.95-.45-1.95 0-3.4 1.07-3.4 2.55 0 1.54 1.45 2.65 3.4 2.65 1.96 0 3.45-1.11 3.45-2.65V3.2L10.2 5.8v10c-.42-.02-.85 0-1.4 0Z" />
         </svg>
       );
     default:
@@ -310,12 +240,8 @@ export default function Home() {
 
             <Panel title="About Me" className="about-panel lg:flex-1">
               <p className="about-copy">
-                I&apos;m the creator of <a href="https://www.sefaly.com" target="_blank" rel="noreferrer">Sefaly</a>,
-                a secure cloud storage platform, and its companion <a href="https://github.com/shokace/sefaly-cli" target="_blank" rel="noreferrer">CLI</a>.
-                I also build satellite trackers and Fourier-based audio experiments with <a href="https://github.com/shokace/FAFR" target="_blank" rel="noreferrer">FAFR</a>.
-              </p>
-              <p className="about-copy">
-                I also produce music as <a href="https://linktr.ee/ezkie" target="_blank" rel="noreferrer">Ezkie</a>.
+                I build satellite trackers, real-time data visualizations, and signal-processing tools.
+                My work focuses on machine learning and performance-driven systems.
               </p>
             </Panel>
 

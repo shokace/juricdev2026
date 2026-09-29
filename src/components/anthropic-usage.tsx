@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import CodexUsageMap from "@/components/codex-usage-map";
+import { normalizeAnthropicSnapshot } from "@/lib/anthropic-usage.mjs";
+import { ANTHROPIC_USAGE_TTL } from "@/lib/anthropic-usage-cache.mjs";
 
 type Usage = {
   input_tokens: number; output_tokens: number; total_tokens: number;
@@ -10,6 +12,9 @@ type Usage = {
 };
 const number = new Intl.NumberFormat("en-US");
 const format = (value: number | null | undefined) => value == null ? "--" : number.format(value);
+const STORAGE_KEY = "juric:anthropic-usage:v1";
+const isStale = (snapshot: Usage) => snapshot.stale || Date.now() - snapshot.updated_at >= ANTHROPIC_USAGE_TTL;
+const normalize = (value: Usage): Usage => ({ ...normalizeAnthropicSnapshot(value), stale: value.stale === true });
 
 export default function AnthropicUsage() {
   const [usage, setUsage] = useState<Usage | null>(null);
@@ -17,25 +22,43 @@ export default function AnthropicUsage() {
   useEffect(() => {
     const controller = new AbortController();
     let last: Usage | null = null;
+    let inFlight = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const display = (snapshot: Usage) => {
+      last = snapshot;
+      setUsage(snapshot);
+      setStatus(isStale(snapshot) ? "STALE" : "SYNCED");
+    };
     const refresh = async () => {
-      if (document.hidden) return;
+      if (document.hidden || inFlight || controller.signal.aborted) return;
+      clearTimeout(timer);
+      inFlight = true;
+      let delay = 15_000;
       try {
         const response = await fetch("/api/anthropic/usage", { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]) });
         if (!response.ok) throw new Error("Usage unavailable");
-        const snapshot: Usage = await response.json();
-        if (![snapshot.total_tokens, snapshot.input_tokens, snapshot.output_tokens, snapshot.updated_at].every(n => Number.isFinite(n) && n >= 0) || !Array.isArray(snapshot.daily_usage)) throw new Error("Invalid usage");
+        const snapshot = normalize(await response.json());
         if (controller.signal.aborted) return;
-        last = snapshot;
-        setUsage(snapshot);
-        setStatus(snapshot.stale || Date.now() - snapshot.updated_at > 2 * 60 * 60 * 1000 ? "STALE" : "SYNCED");
+        display(snapshot);
+        delay = isStale(snapshot) ? 15_000 : 5 * 60_000;
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch { /* Storage may be disabled. */ }
       } catch {
         if (!controller.signal.aborted) setStatus(last ? "STALE" : "UNAVAILABLE");
+      } finally {
+        inFlight = false;
+        if (!controller.signal.aborted) timer = setTimeout(refresh, delay);
       }
     };
-    void refresh();
-    const interval = setInterval(refresh, 5 * 60_000);
+    void Promise.resolve().then(() => {
+      if (controller.signal.aborted) return;
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) display(normalize(JSON.parse(saved)));
+      } catch { /* Invalid or unavailable storage must not prevent a network refresh. */ }
+      void refresh();
+    });
     document.addEventListener("visibilitychange", refresh);
-    return () => { controller.abort(); clearInterval(interval); document.removeEventListener("visibilitychange", refresh); };
+    return () => { controller.abort(); clearTimeout(timer); document.removeEventListener("visibilitychange", refresh); };
   }, []);
   const rows = [
     ["Total Tokens", format(usage?.total_tokens)],
