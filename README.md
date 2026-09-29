@@ -8,7 +8,7 @@ Pushing to GitHub does not deploy the site.
 
 The homepage is statically rendered; the Neverlanding project loads its live traffic
 graph separately when scrolled into view. The hero introduces Petar's current
-work building high-volume file ingestion pipelines across Apple's engineering
+work building high-volume data ingestion pipelines across Apple's engineering
 teams (contract), and previous work on real-time
 5G and 6G systems at Ericsson. Below it, Sefaly is the highlighted
 project, followed by Nullspeak, FAFR, FXBViewer, Neverlanding.page, and Starlink

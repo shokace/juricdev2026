@@ -27,7 +27,7 @@ export default function Home() {
           <div className="hero-copy">
             <p className="eyebrow">Software engineer</p>
             <h1 id="profile-title">Petar Juric<span aria-hidden="true">.</span></h1>
-            <p className="hero-description">Building high-volume file ingestion pipelines across Apple’s engineering teams.</p>
+            <p className="hero-description">Building high-volume data ingestion pipelines across Apple’s engineering teams.</p>
             <p className="hero-context">Previously worked on real-time 5G and 6G systems at Ericsson.</p>
             <div className="hero-actions">
               <a className="text-link hero-link" href="#work">View projects <LinkIcon name="down" /></a>
