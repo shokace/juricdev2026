@@ -1,128 +1,130 @@
-type CloudflareResponse = {
-  data?: {
-    viewer?: {
-      zones?: Array<{
-        httpRequestsAdaptiveGroups?: Array<{
-          count?: number;
-          sum?: {
-            visits?: number;
-            edgeResponseBytes?: number;
-          };
-        }>;
-      }>;
-    };
-  };
-  errors?: Array<{ message?: string }>;
-};
-
 export type NeverLandingStats = {
-  uniqueVisitors: number;
   requests: number;
-  edgeResponseBytes: number;
-  windowHours: number;
+  estimated: boolean;
+  windowStart: string;
+  windowEnd: string;
+  updatedAt: string;
+  intervalMinutes: 1440;
+  points: Array<{ timestamp: string; requests: number }>;
 };
 
-class CloudflareError extends Error {
-  details: unknown;
+type CloudflareResponse = {
+  data?: { viewer?: { zones?: Array<{
+    httpRequestsAdaptiveGroups?: Array<{
+      count?: number;
+      avg?: { sampleInterval?: number };
+      dimensions?: { date?: string };
+    }>;
+  }> } };
+  errors?: unknown[];
+};
 
-  constructor(message: string, details: unknown) {
-    super(message);
-    this.details = details;
-  }
-}
+const MINUTE = 60_000;
+const DAY = 24 * 60 * MINUTE;
+const INTERVAL = DAY;
 
-export async function fetchNeverLandingStats(): Promise<NeverLandingStats> {
-  const token = process.env.CLOUDFLARE_API_TOKEN;
-  const zoneTag = process.env.CLOUDFLARE_ZONE_ID;
-
-  if (!token || !zoneTag) {
-    throw new Error("Missing Cloudflare credentials.");
-  }
-
-  // Round the window to the hour so the request body (part of the fetch
-  // cache key) stays stable and revalidate can actually serve cache hits.
-  const hourMs = 60 * 60 * 1000;
-  const end = new Date(Math.floor(Date.now() / hourMs) * hourMs);
-  const days = 7;
-  const dayMs = 24 * 60 * 60 * 1000;
-
-  const query = `
-    query ($zoneTag: String!, $start: Time!, $end: Time!) {
-      viewer {
-        zones(filter: { zoneTag: $zoneTag }) {
-          httpRequestsAdaptiveGroups(
-            limit: 1
-            filter: { datetime_geq: $start, datetime_lt: $end, requestSource: "eyeball" }
-          ) {
-            count
-            sum {
-              visits
-              edgeResponseBytes
-            }
+const query = `
+  query ($zoneTag: String!, $start: Time!, $end: Time!) {
+    viewer {
+      zones(filter: { zoneTag: $zoneTag }) {
+        httpRequestsAdaptiveGroups(
+          limit: 32
+          orderBy: [date_ASC]
+          filter: {
+            datetime_geq: $start, datetime_lt: $end, requestSource: "eyeball"
+            clientRequestHTTPHost_in: ["neverlanding.page", "www.neverlanding.page"]
           }
+        ) {
+          count
+          avg { sampleInterval }
+          dimensions { date }
         }
       }
     }
-  `;
+  }
+`;
 
-  const fetchWindow = async (start: Date, end: Date) => {
-    const response = await fetch("https://api.cloudflare.com/client/v4/graphql", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query,
-        variables: {
-          zoneTag,
-          start: start.toISOString(),
-          end: end.toISOString(),
-        },
-      }),
-      next: { revalidate: 600 },
-    });
+// Empty successful groups mean no requests. Missing/invalid data is an error,
+// never a zero-traffic graph. Only aggregate timestamps and counts leave the server.
+export function normalizeNeverLandingStats(
+  payload: CloudflareResponse, start: number, end: number, updatedAt: number,
+): NeverLandingStats {
+  const zones = payload?.data?.viewer?.zones;
+  const groups = zones?.[0]?.httpRequestsAdaptiveGroups;
+  if (payload?.errors?.length || zones?.length !== 1 || !Array.isArray(groups)) {
+    throw new Error("Cloudflare analytics unavailable.");
+  }
 
-    if (!response.ok) {
-      throw new Error("Cloudflare request failed.");
+  const first = Math.floor(start / INTERVAL) * INTERVAL;
+  const counts = new Map<number, number>();
+  let estimated = false;
+  for (const group of groups) {
+    const timestamp = Date.parse(`${group.dimensions?.date}T00:00:00.000Z`);
+    const count = group.count;
+    const sampleInterval = group.avg?.sampleInterval;
+    if (!Number.isFinite(timestamp) || timestamp % INTERVAL !== 0 || timestamp < first || timestamp >= end
+      || typeof count !== "number" || !Number.isSafeInteger(count) || count < 0
+      || typeof sampleInterval !== "number" || !Number.isFinite(sampleInterval) || sampleInterval < 1
+      || counts.has(timestamp)) {
+      throw new Error("Invalid Cloudflare analytics.");
     }
+    counts.set(timestamp, count);
+    estimated ||= sampleInterval > 1;
+  }
 
-    const payload = (await response.json()) as CloudflareResponse;
-
-    if (payload.errors?.length) {
-      throw new CloudflareError("Cloudflare GraphQL error.", payload.errors);
-    }
-
-    const group = payload?.data?.viewer?.zones?.[0]?.httpRequestsAdaptiveGroups?.[0];
-    return {
-      visits: group?.sum?.visits ?? 0,
-      requests: group?.count ?? 0,
-      edgeResponseBytes: group?.sum?.edgeResponseBytes ?? 0,
-    };
-  };
-
-  const windows = Array.from({ length: days }, (_, index) => {
-    const windowEnd = new Date(end.getTime() - index * dayMs);
-    const windowStart = new Date(windowEnd.getTime() - dayMs);
-    return { windowStart, windowEnd };
+  const points = Array.from({ length: Math.ceil((end - first) / INTERVAL) }, (_, index) => {
+    const timestamp = first + index * INTERVAL;
+    return { timestamp: new Date(timestamp).toISOString(), requests: counts.get(timestamp) ?? 0 };
   });
-
-  const results = await Promise.all(
-    windows.map(({ windowStart, windowEnd }) => fetchWindow(windowStart, windowEnd))
-  );
-
-  const visits = results.reduce((sum, current) => sum + current.visits, 0);
-  const requests = results.reduce((sum, current) => sum + current.requests, 0);
-  const edgeResponseBytes = results.reduce((sum, current) => sum + current.edgeResponseBytes, 0);
-
   return {
-    windowHours: days * 24,
-    uniqueVisitors: visits,
-    requests,
-    edgeResponseBytes,
+    requests: points.reduce((sum, point) => sum + point.requests, 0),
+    estimated,
+    windowStart: new Date(start).toISOString(),
+    windowEnd: new Date(end).toISOString(),
+    updatedAt: new Date(updatedAt).toISOString(),
+    intervalMinutes: 1440,
+    points,
   };
 }
 
-export function isCloudflareError(error: unknown): error is CloudflareError {
-  return error instanceof CloudflareError;
+export function createNeverLandingStatsReader({
+  fetcher = fetch,
+  now = Date.now,
+  credentials = () => ({ token: process.env.CLOUDFLARE_API_TOKEN, zoneTag: process.env.CLOUDFLARE_ZONE_ID }),
+}: {
+  fetcher?: typeof fetch;
+  now?: () => number;
+  credentials?: () => { token: string | undefined; zoneTag: string | undefined };
+} = {}) {
+  let cached: NeverLandingStats | null = null;
+  let pending: Promise<NeverLandingStats> | null = null;
+
+  async function refresh() {
+    const { token, zoneTag } = credentials();
+    if (!token || !zoneTag) throw new Error("Cloudflare analytics unavailable.");
+    const end = Math.floor(now() / MINUTE) * MINUTE;
+    const start = end - 30 * DAY;
+    const response = await fetcher("https://api.cloudflare.com/client/v4/graphql", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query, variables: {
+        zoneTag, start: new Date(start).toISOString(), end: new Date(end).toISOString(),
+      } }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!response.ok) throw new Error("Cloudflare analytics unavailable.");
+    cached = normalizeNeverLandingStats(await response.json(), start, end, now());
+    return cached;
+  }
+
+  return async function readStats() {
+    if (cached && now() - Date.parse(cached.updatedAt) < MINUTE) return cached;
+    if (!pending) pending = refresh().finally(() => { pending = null; });
+    return pending;
+  };
 }
+
+// Coalesce concurrent visitors and cap upstream refreshes to once per minute
+// within each edge instance. Public responses can also be cached for one minute.
+export const fetchNeverLandingStats = createNeverLandingStatsReader();

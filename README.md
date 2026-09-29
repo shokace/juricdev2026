@@ -6,7 +6,8 @@ Pushing to GitHub does not deploy the site.
 
 ## Portfolio
 
-The homepage is statically rendered and has no live API dependencies. The hero is
+The homepage is statically rendered; the Neverlanding project loads its live traffic
+graph separately when scrolled into view. The hero is
 Petar's engineering bio: data visualization, large-scale data pipelines across
 teams at Apple (contract), and prior RTOS work at Ericsson. Below it, Sefaly is the highlighted
 project, followed by FXBViewer, Neverlanding.page, and Starlink Tracker under
@@ -26,6 +27,29 @@ The KV namespace is shared with usage reporting and must not be deleted.
 npm run dev
 npm run lint
 npm run build
+```
+
+## Neverlanding traffic
+
+The inline graph replaces the Neverlanding project note with a rolling 30-day
+request history, grouped by UTC day. It refreshes every minute while near the
+viewport and pauses in background tabs. Hover, touch, or arrow keys reveal daily
+counts. The first and last days may be partial. Requests include all HTTP traffic,
+not unique visitors; sampled Cloudflare counts are labeled as estimates.
+
+`/api/neverlanding/stats` uses server-only `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ZONE_ID` settings already configured in Pages. The GraphQL query filters
+to `neverlanding.page` and `www.neverlanding.page`, excludes internal Cloudflare
+requests, and returns only aggregate counts and timestamps. Concurrent requests
+are coalesced and successful results cached for one minute per edge instance,
+with a one-minute shared-cache header. Provider reporting may lag.
+
+Missing or failed analytics never become fabricated zero traffic. The browser
+keeps the last good chart during a refresh failure, labels it delayed, and shows
+its original update time. A first-load failure shows an unavailable message.
+
+```sh
+npm run test:neverlanding
 ```
 
 ## Usage page

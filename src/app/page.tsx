@@ -1,5 +1,6 @@
 import Image from "next/image";
 import PortfolioMotion from "@/components/portfolio-motion";
+import NeverlandingTraffic from "@/components/neverlanding-traffic";
 
 function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
   return <a className="text-link" href={href} target="_blank" rel="noreferrer">{children}<span aria-hidden="true"> ↗</span></a>;
@@ -24,8 +25,8 @@ export default function Home() {
           <div className="hero-copy">
             <p className="eyebrow">Software engineer</p>
             <h1 id="profile-title">Petar Juric<span aria-hidden="true">.</span></h1>
-            <p className="hero-description">I’m a software engineer specializing in data visualization, large-scale data pipelines, and real-time systems.</p>
-            <p className="hero-context">Currently contracted at Apple, I build data pipelines connecting teams across engineering disciplines. Previously, I worked on real-time operating systems (RTOS) at Ericsson. My focus is making complex datasets clear and usable through interactive visualization.</p>
+            <p className="hero-description">I’m a software engineer focused on data visualization and large-scale data systems.</p>
+            <p className="hero-context">Currently on contract at Apple, I connect data across engineering teams. Previously, I developed real-time systems at Ericsson.</p>
             <div className="hero-actions">
               <a className="text-link hero-link" href="#work">View projects <span aria-hidden="true">↓</span></a>
               <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
@@ -85,7 +86,7 @@ export default function Home() {
 
           <article className="project-row" aria-labelledby="neverlanding-title" data-reveal>
             <div><p className="project-category">Web application</p><h3 id="neverlanding-title">Neverlanding.page</h3></div>
-            <div className="project-row-description"><p>A web discovery application for exploring independent websites, saving favorites, and keeping a personal browsing history.</p><p className="project-note">Discovery, accounts, and a catalog spanning one million sites.</p></div>
+            <div className="project-row-description"><p>A web discovery application for exploring independent websites, saving favorites, and keeping a personal browsing history.</p><NeverlandingTraffic /></div>
             <ExternalLink href="https://neverlanding.page">View project</ExternalLink>
           </article>
 
