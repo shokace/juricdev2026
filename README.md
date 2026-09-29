@@ -10,8 +10,10 @@ The homepage is statically rendered; the Neverlanding project loads its live tra
 graph separately when scrolled into view. The hero is
 Petar's engineering bio: data visualization, large-scale data pipelines across
 teams at Apple (contract), and prior RTOS work at Ericsson. Below it, Sefaly is the highlighted
-project, followed by FXBViewer, Neverlanding.page, and Starlink Tracker under
-Other projects. Employment details are limited to information supplied by Petar.
+project, followed by Nullspeak, FAFR, FXBViewer, Neverlanding.page, and Starlink
+Tracker under Other projects. Nullspeak is presented as a visual speech recognition
+prototype; FAFR covers Fourier audio encoding, reconstruction, and equation export.
+Both link to their source repositories. Employment details are limited to information supplied by Petar.
 His headshot is hosted locally with explicit dimensions.
 
 Motion is progressive enhancement: a short hero entrance, one-time section

@@ -78,6 +78,18 @@ export default function Home() {
             <h2 id="projects-title">Other projects</h2>
           </div>
 
+          <article className="project-row" aria-labelledby="nullspeak-title" data-reveal>
+            <div><p className="project-category">Computer vision</p><h3 id="nullspeak-title">Nullspeak</h3></div>
+            <div className="project-row-description"><p>A visual speech recognition prototype that generates captions from live camera input, using mouth tracking and streaming inference without audio.</p><p className="project-note">Python, OpenCV, PyTorch, and AutoAVSR.</p></div>
+            <ExternalLink href="https://github.com/shokace/nullspeak">View source</ExternalLink>
+          </article>
+
+          <article className="project-row" aria-labelledby="fafr-title" data-reveal>
+            <div><p className="project-category">Signal processing</p><h3 id="fafr-title">FAFR</h3></div>
+            <div className="project-row-description"><p>A C++ audio tool that encodes waveforms as framewise Fourier coefficients, reconstructs audio, and exports explicit equations describing the signal.</p><p className="project-note">C++17, FFTW3, libsndfile, and an FFmpeg decoder patch.</p></div>
+            <ExternalLink href="https://github.com/shokace/FAFR">View source</ExternalLink>
+          </article>
+
           <article className="project-row" aria-labelledby="fxb-title" data-reveal>
             <div><p className="project-category">Desktop software · 2015–2016</p><h3 id="fxb-title">FXBViewer</h3></div>
             <div className="project-row-description"><p>A C++ and Qt utility that parses Sylenth1 preset banks and searches their contents by name, making large preset collections easier to navigate.</p><p className="project-note"><a href="https://sourceforge.net/projects/fxb-viewer/files/stats/timeline" target="_blank" rel="noreferrer">500+ downloads on SourceForge</a></p></div>
