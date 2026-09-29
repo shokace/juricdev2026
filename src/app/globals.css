@@ -36,6 +36,8 @@ h1, h2, h3, h4, p { margin: 0; }
 .hero h1 > span { color: var(--accent-green); }
 .hero-description { max-width: 550px; margin-top: 25px; font-size: 23px; line-height: 1.55; letter-spacing: -.02em; color: var(--text1); }
 .hero-context { max-width: 55ch; margin-top: 20px; font-size: 18px; line-height: 1.7; color: var(--text1); }
+.hero-context a { text-decoration: underline; text-decoration-color: #aeb8c6; text-underline-offset: 4px; transition: color 160ms ease, text-decoration-color 160ms ease; }
+.hero-context a:hover, .hero-context a:focus-visible { color: var(--accent-green); text-decoration-color: var(--accent-green); }
 .text-link { display: inline-flex; align-items: center; gap: 7px; width: fit-content; min-height: 44px; font-size: 14px; font-weight: 500; color: var(--text0); text-decoration: underline; text-decoration-color: #aeb8c6; text-underline-offset: 5px; transition: color 160ms ease, text-decoration-color 160ms ease; }
 .text-link:hover { color: var(--accent-green); text-decoration-color: var(--accent-green); }
 .icon-link { display: inline-flex; align-items: center; gap: 7px; }

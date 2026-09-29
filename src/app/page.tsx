@@ -28,7 +28,7 @@ export default function Home() {
             <p className="eyebrow">Software engineer</p>
             <h1 id="profile-title">Petar Juric<span aria-hidden="true">.</span></h1>
             <p className="hero-description">Building high-volume data ingestion pipelines across Apple’s engineering teams.</p>
-            <p className="hero-context">Previously worked on real-time 5G and 6G systems at Ericsson.</p>
+            <p className="hero-context">Previously worked on real-time <a href="https://en.wikipedia.org/wiki/5G" target="_blank" rel="noreferrer">5G</a> and <a href="https://en.wikipedia.org/wiki/6G" target="_blank" rel="noreferrer">6G</a> systems at Ericsson.</p>
             <div className="hero-actions">
               <a className="text-link hero-link" href="#work">View projects <LinkIcon name="down" /></a>
               <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
