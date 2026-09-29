@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import AnthropicUsage from "@/components/anthropic-usage";
 import CodexUsage from "@/components/codex-usage";
+import LinkIcon from "@/components/link-icon";
 
 export const metadata: Metadata = {
   title: "Usage | Petar Juric",
@@ -17,7 +18,7 @@ export default function UsagePage() {
       <a className="skip-link" href="#main">Skip to content</a>
       <header className="site-header">
         <a className="wordmark" href="/">juric.dev</a>
-        <nav aria-label="Main navigation"><a href="/">Back to portfolio</a></nav>
+        <nav aria-label="Main navigation"><a className="icon-link" href="/"><LinkIcon name="back" />Back to portfolio</a></nav>
       </header>
       <main id="main" tabIndex={-1}>
         <div className="usage-heading"><h1>Usage</h1><p>Personal account and API activity. These summaries reflect provider reporting, which can be delayed.</p></div>
@@ -26,7 +27,7 @@ export default function UsagePage() {
           <section className="usage-panel" aria-labelledby="anthropic-heading"><h2 id="anthropic-heading">Anthropic</h2><p>API usage</p><AnthropicUsage /></section>
         </div>
       </main>
-      <footer className="site-footer"><p>Petar Juric <span aria-hidden="true">/</span> Software engineer</p><a href="/">Back to portfolio</a></footer>
+      <footer className="site-footer"><p>Petar Juric <span aria-hidden="true">/</span> Software engineer</p><a className="icon-link" href="/"><LinkIcon name="back" />Back to portfolio</a></footer>
     </div>
   );
 }

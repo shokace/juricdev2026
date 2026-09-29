@@ -1,9 +1,11 @@
 import Image from "next/image";
 import PortfolioMotion from "@/components/portfolio-motion";
 import NeverlandingTraffic from "@/components/neverlanding-traffic";
+import LinkIcon from "@/components/link-icon";
 
 function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a className="text-link" href={href} target="_blank" rel="noreferrer">{children}<span aria-hidden="true"> ↗</span></a>;
+  const github = href.startsWith("https://github.com/");
+  return <a className="text-link" href={href} target="_blank" rel="noreferrer">{github && <LinkIcon name="github" />}{children}{!github && <LinkIcon name="external" />}</a>;
 }
 
 export default function Home() {
@@ -16,7 +18,7 @@ export default function Home() {
         <nav aria-label="Main navigation">
           <a href="#about">About</a>
           <a href="#work">Projects</a>
-          <a href="https://www.linkedin.com/in/pjuric/" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
+          <a className="icon-link" href="https://www.linkedin.com/in/pjuric/" target="_blank" rel="noreferrer"><LinkIcon name="linkedin" />LinkedIn</a>
         </nav>
       </header>
 
@@ -28,7 +30,7 @@ export default function Home() {
             <p className="hero-description">I’m a software engineer focused on data visualization and large-scale data systems.</p>
             <p className="hero-context">Currently on contract at Apple, I connect data across engineering teams. Previously, I developed real-time systems at Ericsson.</p>
             <div className="hero-actions">
-              <a className="text-link hero-link" href="#work">View projects <span aria-hidden="true">↓</span></a>
+              <a className="text-link hero-link" href="#work">View projects <LinkIcon name="down" /></a>
               <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
             </div>
           </div>
@@ -113,7 +115,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <p>Petar Juric <span aria-hidden="true">/</span> Software engineer</p>
-        <div><a href="/usage">Usage</a><a href="#main">Back to top <span aria-hidden="true">↑</span></a></div>
+        <div><a href="/usage">Usage</a><a className="icon-link" href="#main">Back to top <LinkIcon name="up" /></a></div>
       </footer>
     </div>
   );
