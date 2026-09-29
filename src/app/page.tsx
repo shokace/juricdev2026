@@ -62,7 +62,7 @@ export default function Home() {
               </div>
             </div>
             <div className="project-story" data-reveal>
-              <p>I created Sefaly, an end-to-end encrypted cloud storage platform, and its companion command-line client.</p>
+              <p>I created Sefaly, a cloud storage platform with quantum-safe, end-to-end encryption and a companion command-line client.</p>
               <p>The product brought file management and secure sharing into a web application, with encryption performed on the user’s device before upload. The CLI extended those workflows to the terminal.</p>
               <p className="project-status">Sefaly is part of my previous independent work. I’m no longer actively developing the project.</p>
             </div>
