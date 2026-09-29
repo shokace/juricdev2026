@@ -27,6 +27,8 @@ npm run build
 The account summaries now live at `/usage`, linked discreetly in the portfolio
 footer. They render in plain side-by-side panels and stack on mobile. This page is
 excluded from search indexing. The homepage does not mount or fetch these tools.
+Links between the two pages use native browser navigation, avoiding client-side
+route-prefetch compatibility issues with the current Cloudflare Pages adapter.
 
 ### Codex
 

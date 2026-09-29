@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
   return <a className="text-link" href={href} target="_blank" rel="noreferrer">{children}<span aria-hidden="true"> ↗</span></a>;
 }
@@ -96,7 +94,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <p>Petar Juric <span aria-hidden="true">/</span> Software engineer</p>
-        <div><Link href="/usage">Usage</Link><a href="#main">Back to top <span aria-hidden="true">↑</span></a></div>
+        <div><a href="/usage">Usage</a><a href="#main">Back to top <span aria-hidden="true">↑</span></a></div>
       </footer>
     </div>
   );
