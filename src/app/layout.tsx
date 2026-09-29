@@ -11,12 +11,12 @@ const plexSans = IBM_Plex_Sans({ variable: "--font-plex-sans", subsets: ["latin"
 
 export const metadata: Metadata = {
   title: "Petar Juric | Software Engineer",
-  description: "Petar Juric specializes in data visualization, large-scale data pipelines, and real-time systems. Currently contracted at Apple; previously at Ericsson.",
+  description: "Software engineer deploying data systems at Apple on contract. Previously worked on real-time 5G and 6G systems at Ericsson.",
   metadataBase: new URL("https://juric.dev"),
   alternates: { canonical: "/" },
   openGraph: {
     title: "Petar Juric | Software Engineer",
-    description: "Data visualization, large-scale data pipelines, and real-time systems. Software engineer currently contracted at Apple, with RTOS experience at Ericsson.",
+    description: "Software engineer deploying data systems at Apple on contract. Previously worked on real-time 5G and 6G systems at Ericsson.",
     url: "https://juric.dev",
     type: "website",
   },

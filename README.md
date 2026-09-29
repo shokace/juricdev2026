@@ -7,9 +7,9 @@ Pushing to GitHub does not deploy the site.
 ## Portfolio
 
 The homepage is statically rendered; the Neverlanding project loads its live traffic
-graph separately when scrolled into view. The hero is
-Petar's engineering bio: data visualization, large-scale data pipelines across
-teams at Apple (contract), and prior RTOS work at Ericsson. Below it, Sefaly is the highlighted
+graph separately when scrolled into view. The hero introduces Petar's current
+work deploying data systems at Apple (contract), and previous work on real-time
+5G and 6G systems at Ericsson. Below it, Sefaly is the highlighted
 project, followed by Nullspeak, FAFR, FXBViewer, Neverlanding.page, and Starlink
 Tracker under Other projects. Nullspeak is presented as a visual speech recognition
 prototype; FAFR covers Fourier audio encoding, reconstruction, and equation export.

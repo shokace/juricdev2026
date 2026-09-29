@@ -27,8 +27,8 @@ export default function Home() {
           <div className="hero-copy">
             <p className="eyebrow">Software engineer</p>
             <h1 id="profile-title">Petar Juric<span aria-hidden="true">.</span></h1>
-            <p className="hero-description">I’m a software engineer focused on data visualization and large-scale data systems.</p>
-            <p className="hero-context">Currently on contract at Apple, I connect data across engineering teams. Previously, I developed real-time systems at Ericsson.</p>
+            <p className="hero-description">Currently deploying data systems at Apple.</p>
+            <p className="hero-context">Previously worked on real-time 5G and 6G systems at Ericsson.</p>
             <div className="hero-actions">
               <a className="text-link hero-link" href="#work">View projects <LinkIcon name="down" /></a>
               <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
