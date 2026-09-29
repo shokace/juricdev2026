@@ -31,11 +31,12 @@ npm run build
 
 ## Neverlanding traffic
 
-The inline graph replaces the Neverlanding project note with a rolling 30-day
-request history, grouped by UTC day. It refreshes every minute while near the
-viewport and pauses in background tabs. Hover, touch, or arrow keys reveal daily
-counts. The first and last days may be partial. Requests include all HTTP traffic,
-not unique visitors; sampled Cloudflare counts are labeled as estimates.
+A small footer-style note under Neverlanding shows its rolling 30-day request
+count beside a 64 × 20 px sparkline of daily traffic. It refreshes every minute
+while near the viewport and pauses in background tabs. The source and update time
+are available in the hover text and accessible label. Requests include all HTTP
+traffic, not unique visitors; sampled counts retain the approximate symbol.
+The first and last days may be partial.
 
 `/api/neverlanding/stats` uses server-only `CLOUDFLARE_API_TOKEN` and
 `CLOUDFLARE_ZONE_ID` settings already configured in Pages. The GraphQL query filters
@@ -45,8 +46,9 @@ are coalesced and successful results cached for one minute per edge instance,
 with a one-minute shared-cache header. Provider reporting may lag.
 
 Missing or failed analytics never become fabricated zero traffic. The browser
-keeps the last good chart during a refresh failure, labels it delayed, and shows
-its original update time. A first-load failure shows an unavailable message.
+keeps the last good sparkline during a refresh failure, labels it delayed, and
+retains the original update time in its label. A first-load failure shows a short
+unavailable message.
 
 ```sh
 npm run test:neverlanding
