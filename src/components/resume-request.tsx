@@ -116,7 +116,7 @@ export default function ResumeRequest() {
       <div className="resume-intro">
         <p className="eyebrow">Experience & qualifications</p>
         <h2 id="resume-title">My resume, sent automatically.</h2>
-        <p>Enter your email and the PDF is sent right away—no manual approval needed. Use a personal, work, or university address.</p>
+        <p>Enter your email and the PDF is sent right away.</p>
       </div>
       <form className="resume-form" onSubmit={submit} aria-busy={state === "sending"}>
         <fieldset disabled={config !== "ready" || state === "sending" || state === "sent"}>
@@ -128,7 +128,7 @@ export default function ResumeRequest() {
           </div>
           <label className="resume-consent">
             <input type="checkbox" name="consent" required />
-            <span id="resume-privacy">I agree to my email and request being stored to send the resume and prevent abuse. This does not subscribe me to a mailing list.</span>
+            <span id="resume-privacy">I agree to my email and request being stored to send the resume and prevent abuse.</span>
           </label>
           <div ref={challenge} className="resume-challenge" />
           <button className="resume-submit" type="submit" disabled={!token}>
