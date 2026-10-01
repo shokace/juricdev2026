@@ -102,15 +102,17 @@ export function createResumeService({ fetcher = fetch, now = () => Date.now(), u
   return {
     async fetch(request, env) {
       const url = new URL(request.url);
+      const pathname = url.pathname.startsWith('/api/resume/')
+        ? url.pathname.slice('/api/resume'.length) : url.pathname;
       const origin = request.headers.get('Origin');
-      if (request.method === 'OPTIONS' && ['/request', '/config'].includes(url.pathname)) {
+      if (request.method === 'OPTIONS' && ['/request', '/config'].includes(pathname)) {
         if (!origins(env).includes(origin)) return reply(request, env, { error: 'Origin not allowed.' }, 403);
         return reply(request, env, {}, 200, { 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '600' });
       }
-      if (url.pathname === '/config' && request.method === 'GET') {
+      if (pathname === '/config' && request.method === 'GET') {
         return reply(request, env, { available: ready(env), siteKey: ready(env) ? env.TURNSTILE_SITE_KEY : null });
       }
-      if (url.pathname !== '/request') return reply(request, env, { error: 'Not found.' }, 404);
+      if (pathname !== '/request') return reply(request, env, { error: 'Not found.' }, 404);
       if (request.method !== 'POST') return reply(request, env, { error: 'Method not allowed.' }, 405, { Allow: 'POST' });
       if (!origins(env).includes(origin)) return reply(request, env, { error: 'Origin not allowed.' }, 403);
       if (!ready(env)) return reply(request, env, { error: genericFailure }, 503);

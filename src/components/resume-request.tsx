@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
-const endpoint = "https://resume.juric.dev";
+// Live pages use the existing site origin, avoiding a separate DNS lookup.
+// Local development uses the deployed API on the established production domain.
+const endpoint = process.env.NODE_ENV === "development" ? "https://juric.dev/api/resume" : "/api/resume";
 type Turnstile = {
   render: (element: HTMLElement, options: Record<string, unknown>) => string;
   reset: (id: string) => void;
@@ -45,7 +47,7 @@ export default function ResumeRequest() {
       if (started) return;
       started = true;
       try {
-        const response = await fetch(`${endpoint}/config`, { signal: controller.signal, credentials: "omit", cache: "no-store" });
+        const response = await fetch(`${endpoint}/config`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]), credentials: "omit", cache: "no-store" });
         const data = await response.json();
         if (!response.ok || !data.available || typeof data.siteKey !== "string") throw new Error("Unavailable");
         await loadTurnstile();
@@ -96,7 +98,7 @@ export default function ResumeRequest() {
       if (!response.ok) throw new Error(result.error || "Unable to send your request. Please try again later.");
       accepted = true;
       setState("sent");
-      setMessage("Check your inbox. Your resume email is queued, with the PDF attached. It may take a few minutes; check your spam folder too.");
+      setMessage("Your PDF is queued for automatic delivery. Check your inbox and spam folder; the email may take a few minutes to arrive.");
       form.reset();
     } catch (error) {
       setState("error");
@@ -113,8 +115,8 @@ export default function ResumeRequest() {
     <section id="resume" ref={section} className="resume-section" aria-labelledby="resume-title">
       <div className="resume-intro">
         <p className="eyebrow">Experience & qualifications</p>
-        <h2 id="resume-title">My resume, in your inbox.</h2>
-        <p>Leave your email and I’ll send you a PDF copy. Use your personal, work, or university address.</p>
+        <h2 id="resume-title">My resume, sent automatically.</h2>
+        <p>Enter your email and the PDF is sent right away—no manual approval needed. Use a personal, work, or university address.</p>
       </div>
       <form className="resume-form" onSubmit={submit} aria-busy={state === "sending"}>
         <fieldset disabled={config !== "ready" || state === "sending" || state === "sent"}>

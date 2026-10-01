@@ -180,3 +180,18 @@ test('public config exposes only the site key; every PDF/download path is unavai
   assert.equal((await f.request({}, {}, 'OPTIONS')).headers.get('Access-Control-Allow-Origin'), 'https://juric.dev');
   assert.equal((await f.request({}, { Origin: 'https://evil.org' }, 'OPTIONS')).status, 403);
 });
+
+test('same-origin API paths support config and sending with identical security checks', async t => {
+  const f = await fixture(t);
+  const config = await f.service.fetch(new Request('https://juric.dev/api/resume/config'), f.env);
+  assert.equal(config.status, 200);
+  assert.deepEqual(await config.json(), { available: true, siteKey: 'real-site-key' });
+  assert.equal((await f.request({}, {}, 'POST', '/api/resume/request')).status, 202);
+  assert.equal(f.emails.length, 1);
+  assert.equal((await f.request({}, { Origin: 'https://attacker.test' }, 'POST', '/api/resume/request')).status, 403);
+  assert.equal((await f.request({}, { Origin: '' }, 'POST', '/api/resume/request')).status, 403);
+  for (const path of ['/api/resumeevil/config', '/api/resume/resume.pdf', '/api/resume/download']) {
+    assert.equal((await f.request({}, {}, 'GET', path)).status, 404);
+  }
+  assert.equal((await f.request({}, {}, 'OPTIONS', '/api/resume/request')).status, 200);
+});

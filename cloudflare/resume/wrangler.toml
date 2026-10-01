@@ -8,6 +8,14 @@ preview_urls = false
 pattern = "resume.juric.dev"
 custom_domain = true
 
+[[routes]]
+pattern = "juric.dev/api/resume/*"
+zone_name = "juric.dev"
+
+[[routes]]
+pattern = "www.juric.dev/api/resume/*"
+zone_name = "juric.dev"
+
 [vars]
 ALLOWED_ORIGINS = "https://juric.dev,https://www.juric.dev,http://127.0.0.1:3088,http://localhost:3088"
 EMAIL_POLICY = "business-and-personal"
