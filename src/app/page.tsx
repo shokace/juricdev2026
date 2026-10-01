@@ -2,6 +2,7 @@ import Image from "next/image";
 import PortfolioMotion from "@/components/portfolio-motion";
 import NeverlandingTraffic from "@/components/neverlanding-traffic";
 import LinkIcon from "@/components/link-icon";
+import ResumeRequest from "@/components/resume-request";
 
 function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
   const github = href.startsWith("https://github.com/");
@@ -32,6 +33,7 @@ export default function Home() {
             <div className="hero-actions">
               <a className="text-link hero-link" href="#work">View projects <LinkIcon name="down" /></a>
               <ExternalLink href="https://github.com/shokace/">GitHub</ExternalLink>
+              <a className="text-link" href="#resume">Request resume</a>
             </div>
           </div>
           <div className="hero-profile">
@@ -111,6 +113,7 @@ export default function Home() {
           </article>
         </section>
 
+        <ResumeRequest />
       </main>
 
       <footer className="site-footer">

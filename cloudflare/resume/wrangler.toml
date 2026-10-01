@@ -1,0 +1,29 @@
+name = "juric-resume"
+main = "src/service.mjs"
+compatibility_date = "2026-09-01"
+workers_dev = false
+preview_urls = false
+
+[[routes]]
+pattern = "resume.juric.dev"
+custom_domain = true
+
+[vars]
+ALLOWED_ORIGINS = "https://juric.dev,https://www.juric.dev,http://127.0.0.1:3088,http://localhost:3088"
+EMAIL_POLICY = "business-and-personal"
+RESUME_FROM = "Petar Juric <resume@juric.dev>"
+# Public widget identifier; secrets live in Cloudflare.
+TURNSTILE_SITE_KEY = "0x4AAAAAAFK3qHDce4j6WZxg"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "juric-resume"
+database_id = "9395bdaf-701d-4242-875b-0a11c9e1b574"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "RESUME_FILES"
+id = "69088df9ffda41ff822ae39e6bbd4d24"
+
+# Set through `wrangler secret put`, never commit values:
+# RESEND_API_KEY, TURNSTILE_SECRET_KEY, IP_HASH_SECRET

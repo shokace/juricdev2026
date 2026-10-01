@@ -13,7 +13,9 @@
     "test:iss": "node --test scripts/iss-data.test.mjs",
     "test:anthropic": "node --test scripts/anthropic-usage.test.mjs",
     "test:anthropic:edge": "node scripts/anthropic-edge.test.mjs",
-    "test:neverlanding": "node --test scripts/neverlanding.test.mjs"
+    "test:neverlanding": "node --test scripts/neverlanding.test.mjs",
+    "test:resume": "node --test scripts/resume.test.mjs",
+    "update:email-blocklist": "node scripts/update-email-blocklist.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^9.5.0",
